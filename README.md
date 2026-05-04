@@ -60,8 +60,6 @@ Copy the public template and fill in local paths and API keys:
 cp targetmol.example.yaml targetmol.yaml
 ```
 
-`targetmol.yaml` is a private local configuration file and must not be committed. The public template only documents the expected fields.
-
 Common fields to configure:
 
 - `models.chat_api_key`: OpenAI-compatible chat model key.
@@ -74,18 +72,7 @@ Common fields to configure:
 
 ## Quick Start
 
-Run a dry-run first to inspect the planned workflow:
-
-```bash
-.venv/bin/python -m targetmol.cli \
-  --config targetmol.yaml \
-  --pdb-id 6JX0 \
-  --request "Design EGFR inhibitors" \
-  --run-name quickstart_6jx0 \
-  --dry-run
-```
-
-Remove `--dry-run` to execute the pipeline:
+Run TargetMol with a PDB ID and natural-language task:
 
 ```bash
 .venv/bin/python -m targetmol.cli \
@@ -217,25 +204,6 @@ TargetMol integrates external scientific software where appropriate instead of r
 - LLM and embedding providers are used for natural-language task understanding and evidence ranking.
 
 See [`licenses/`](licenses/) for included third-party license notes.
-
-## Release Boundary
-
-The public repository includes source code, documentation, example inputs, sanitized result excerpts, and license notes.
-
-The following files are intentionally excluded:
-
-- `targetmol.yaml` with private paths and API keys.
-- `runs/` with local run products.
-- Model checkpoints, weights, compressed archives, and cache files.
-- Local development records and non-public workspace artifacts.
-
-## Limitations
-
-- TargetMol is a computational prototype for research workflows.
-- Docking scores and rule-based filters are not substitutes for experimental validation.
-- Structure-based generation requires a compatible DrugFlow checkpoint and suitable protein/reference-ligand inputs.
-- LLM-assisted ligand generation depends on the configured model, search API, and embedding provider.
-- The current release focuses on reproducible command-line workflows rather than a web interface.
 
 ## License
 
