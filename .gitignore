@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+targetmol.yaml
+runs/
+dist/
+.env
+.env.*
+*.key

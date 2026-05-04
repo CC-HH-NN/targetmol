@@ -1,0 +1,6 @@
+rank,name,smiles,docking_score,mw,logp,sa_score,lipinski_pass,pains_alerts
+1,aspirin,CC(=O)Oc1ccccc1C(=O)O,-5.27296,180.159,1.3101,1.58,True,[]
+2,gefitinib_like,COc1cc2ncnc(Nc3ccc(F)c(Cl)c3)c2cc1OCCCN1CCOCC1,-4.59585,446.91,4.2756,2.3374,True,[]
+3,erlotinib_like,C#Cc1cccc(Nc2ncnc3cc(OCCOC)c(OCCOC)cc23)c1,-3.73164,393.443,3.4051,2.4783,True,[]
+4,caffeine,Cn1cnc2n(C)c(=O)n(C)c(=O)c12,-3.5295,194.194,-1.0293,2.298,True,[]
+5,ethanol,CCO,-1.4955,46.069,-0.0014,1.9803,True,[]

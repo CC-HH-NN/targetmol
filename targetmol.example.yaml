@@ -1,0 +1,51 @@
+# Public TargetMol configuration template.
+# Copy this file to targetmol.yaml and fill in local paths, environment names, and API keys.
+
+project:
+  name: TargetMol
+  runs_dir: runs
+
+paths:
+  drugflow_root: /path/to/DrugFlow
+
+envs:
+  drugflow_conda_env: targetmol
+  screening_conda_env: targetmol
+
+models:
+  chat_provider: deepseek
+  chat_base_url: https://api.deepseek.com
+  chat_model: deepseek-v4-flash
+  chat_api_key: YOUR_DEEPSEEK_API_KEY
+  embedding_provider: siliconflow
+  embedding_base_url: https://api.siliconflow.cn/v1
+  embedding_model: Qwen/Qwen3-VL-Embedding-8B
+  embedding_api_key: YOUR_SILICONFLOW_API_KEY
+  chat_thinking: disabled
+
+drugflow:
+  checkpoint: /path/to/drugflow.ckpt
+  device: cpu
+  n_samples: 4
+  batch_size: 2
+  n_steps: 10
+  pocket_distance_cutoff: 8.0
+
+screening:
+  top_k: 20
+  exhaustiveness: 8
+  n_poses: 5
+  n_threads: 2
+
+search:
+  serper_api_key: YOUR_SERPER_API_KEY
+
+ligand_generation:
+  iterations: 2
+  num_smiles: 6
+
+tools:
+  vina: vina
+  gnina: gnina
+  reduce: reduce
+  wget: wget

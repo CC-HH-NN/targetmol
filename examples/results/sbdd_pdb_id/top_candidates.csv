@@ -1,0 +1,4 @@
+rank,name,smiles,docking_score,mw,logp,sa_score,lipinski_pass,pains_alerts
+1,mol_0008,N=C(:Nc1ccccc1)C(:N)[C@H]1CC[C@@H](CC(N)=O)CC1=O,-5.65659,299.354,1.5755,4.1772,True,[]
+2,mol_0004,CC(=O)N[C@H]1CCC[C@@]2(CC1)C(=O)N=N[C@@H]2Nc1ccccc1,-5.22648,314.389,2.8722,4.2688,True,[]
+3,mol_0007,CCc1nn(C)cc1CCCCC[C@@H](C)C[C@@H](O)[C@@H](C)O.Cl.O.O,-4.0267,368.946,1.6257,3.9234,True,[]

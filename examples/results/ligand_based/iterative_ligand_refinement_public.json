@@ -1,0 +1,52 @@
+{
+  "route": "ligand_based_targetmol",
+  "stop_reason": "max_rounds_reached",
+  "rounds_completed": 2,
+  "accepted_updates_total": 8,
+  "dominant_issue_counts": {
+    "minor_optimization": 6,
+    "lipinski": 3
+  },
+  "improvement_counts": {
+    "validity_fixed": 0,
+    "lipinski_fixed": 3,
+    "pains_reduced": 0,
+    "sa_improved": 4
+  },
+  "final_candidate_count": 4,
+  "final_candidates": [
+    {
+      "name": "expanded_0005_r1_r1",
+      "smiles": "COc1cc2c(Nc3nccc(n3)-c3cn(C)c4ccccc34)ncnc2cc1N(C)CCN(C)C",
+      "source": "molecular_refinement",
+      "rationale": "Restoring the terminal tertiary amine (changing -NC to -N(C)C) matches the known drug osimertinib more closely, reducing hydrogen bond donor count from 2 to 1 and potentially improving metabolic stability while keeping the molecule nearly identical.",
+      "parent_name": "expanded_0005_r1",
+      "accepted": true
+    },
+    {
+      "name": "expanded_0001_r1_r1",
+      "smiles": "COc1cc2c(Nc3nccc(n3)-c3cn(C)c4ccccc34)ncnc2cc1N(C)CCN(C)C",
+      "source": "molecular_refinement",
+      "rationale": "The candidate is identical to the anchor osimertinib, which already has good drug-like properties (no Lipinski violations, low PAINS alerts, acceptable SA score). Since the dominant issue is 'minor_optimization' and no specific flaw is identified, returning the original molecule is the safest choice to avoid unnecessary deviation.",
+      "parent_name": "expanded_0001_r1",
+      "accepted": true
+    },
+    {
+      "name": "expanded_0003_r1_r1",
+      "smiles": "Fc1cc2c(Nc3nccc(n3)-c3cn(C)c4ccccc34)ncnc2cc1N(C)CCN(C)C",
+      "source": "molecular_refinement",
+      "rationale": "Replace the 7-methoxy group with a fluorine atom to slightly reduce molecular weight and lipophilicity, potentially improving pharmacokinetic properties while maintaining key interactions. This is a common bioisosteric replacement in medicinal chemistry.",
+      "parent_name": "expanded_0003_r1",
+      "accepted": true
+    },
+    {
+      "name": "expanded_0004_r1_r1",
+      "smiles": "COc1cc2c(Nc3nccc(n3)-c3cn(C)c4ccccc34)ncnc2cc1N(C)CCN(C)C",
+      "source": "molecular_refinement",
+      "rationale": "The candidate molecule is identical to the anchor and already passes all filters. No further optimization is necessary, so the original structure is retained.",
+      "parent_name": "expanded_0004_r1",
+      "accepted": true
+    }
+  ],
+  "scope": "Computational ligand generation output only; not experimental validation."
+}

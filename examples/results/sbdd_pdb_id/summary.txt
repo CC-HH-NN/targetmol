@@ -1,0 +1,8 @@
+Route: sbdd_drugflow
+Screening output: final_report_public.json
+Run status: completed
+Run ID: 20260504_140529_public_clean_6jx0_sbdd
+Planned steps (3): drugflow_generate, sdf_to_smiles, targetmol_screen
+Public metadata: run_metadata_public.json
+Candidate table: top_candidates.csv
+本报告基于计算生成、对接和规则筛选结果，仅用于 computational hit discovery 参考，不代表实验验证结论。

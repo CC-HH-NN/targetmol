@@ -1,0 +1,6 @@
+# Natural-language TargetMol request examples.
+
+Design EGFR inhibitors for lung cancer.
+Screen uploaded EGFR inhibitor candidates against PDB ID 6JX0.
+Generate and refine ligand-like candidates for BCL-2 inhibition.
+Use PDB ID 6JX0 and choose the appropriate structure-driven workflow.

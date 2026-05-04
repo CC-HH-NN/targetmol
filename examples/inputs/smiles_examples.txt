@@ -1,0 +1,7 @@
+# SMILES<TAB>name
+# Small public inputs for TargetMol screen_only dry-run and normalization checks.
+CCO	ethanol
+CC(=O)Oc1ccccc1C(=O)O	aspirin
+Cn1cnc2n(C)c(=O)n(C)c(=O)c12	caffeine
+C#Cc1cccc(Nc2ncnc3cc(OCCOC)c(OCCOC)cc23)c1	erlotinib_like
+COc1cc2ncnc(Nc3ccc(F)c(Cl)c3)c2cc1OCCCN1CCOCC1	gefitinib_like

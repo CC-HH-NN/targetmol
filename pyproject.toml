@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "targetmol"
+version = "0.1.0"
+description = "Target-driven small molecule generation and screening agent"
+requires-python = ">=3.10"
+license = "MIT"
+dependencies = [
+  "PyYAML>=6.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["targetmol*"]

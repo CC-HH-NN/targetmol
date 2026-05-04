@@ -1,0 +1,12 @@
+Route: ligand_based_targetmol
+Screening output: N/A
+Run status: completed
+Run ID: 20260504_140718_public_clean_ligand_agent
+Public metadata: run_metadata_public.json
+Iterative summary: iterative_ligand_refinement_public.json
+Iterative stop reason: max_rounds_reached
+Iterative rounds: 2
+Iterative accepted updates: 8
+Iterative final candidate count: 4
+Iterative final candidates: final_candidates.smi
+本报告基于计算生成、对接和规则筛选结果，仅用于 computational hit discovery 参考，不代表实验验证结论。
