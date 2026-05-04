@@ -20,18 +20,7 @@ TargetMol supports three main workflows:
 | Direct candidate screening | Uploaded SMILES or SDF candidates | `screen_only` | Docking, molecular properties, filters, ranked candidates |
 | Ligand-based agent refinement | Natural-language target request without reliable structure | `ligand_based_targetmol` | Grounded target context, generated candidates, iterative refinement trace |
 
-```mermaid
-flowchart LR
-    A["User request\nPDB ID / PDB file / candidates / natural language"] --> B["Input preparation"]
-    B --> C["Route planner"]
-    C --> D["SBDD generation\nDrugFlow adapter"]
-    C --> E["Ligand-based agent\nLLM + search + embedding + refinement"]
-    C --> F["Direct screening\nuploaded candidates"]
-    D --> G["TargetMol screening"]
-    E --> G
-    F --> G
-    G --> H["Ranked candidates\nCSV / JSON / report"]
-```
+![TargetMol workflow](assets/targetmol-workflow.png)
 
 ## Key Features
 
