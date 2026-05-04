@@ -1,4 +1,4 @@
-"""Ground natural-language requests and explicit targets into an anchor context."""
+"""Target grounding."""
 
 from __future__ import annotations
 
@@ -79,7 +79,7 @@ def ground_input_spec_with_context_data(
     smiles_runner=None,
     embedding_runner=None,
 ) -> tuple[InputSpec, GroundedTargetContext | None]:
-    """Ground request and explicit fields and return updated inputs with context."""
+    """Ground input fields and return context."""
     if not spec.request_text and not spec.target_name and not spec.disease:
         return spec, None
 
@@ -130,7 +130,7 @@ def ground_target_context(
     smiles_runner=None,
     embedding_runner=None,
 ) -> GroundedTargetContext:
-    """Use search, embedding ranking, and LLM extraction to build anchor context."""
+    """Build the target context."""
     context = GroundedTargetContext(
         target_name=target_name,
         disease=disease,
@@ -206,7 +206,7 @@ def _rank_search_hits(
     embedding_runner,
     context: GroundedTargetContext,
 ) -> list[dict[str, str]]:
-    """Rank search evidence with embeddings, preserving original order on failure."""
+    """Rank search evidence."""
     if not hits:
         return []
     if _is_placeholder(models.embedding_api_key) or _is_placeholder(models.embedding_base_url):

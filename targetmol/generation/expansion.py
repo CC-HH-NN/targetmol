@@ -43,7 +43,7 @@ def expand_candidate_pool(
     output_smiles_path: Path,
     llm_runner=None,
 ) -> dict[str, object]:
-    """Build a candidate pool around seed or anchor molecules and write run artifacts."""
+    """Build the first candidate pool."""
     if seed_smiles_file is not None:
         candidates = _deduplicate_candidates(read_seed_smiles_file(seed_smiles_file))
         return _write_expansion_outputs(
@@ -121,7 +121,7 @@ def _parse_generated_candidates(payload: dict[str, object]) -> list[dict[str, st
 
 
 def _anchor_reference_candidate(anchor_smiles: str) -> list[dict[str, str]]:
-    """Add the anchor as a traceable reference candidate when LLM generation succeeds."""
+    """Add the anchor candidate."""
     return [
         {
             "name": "anchor_0001",
@@ -179,7 +179,7 @@ def _write_expansion_outputs(
 
 
 def _call_expansion_llm(*, grounded_context: GroundedTargetContext, models: ModelsConfig) -> dict[str, object]:
-    """Call an OpenAI-compatible chat endpoint to generate candidates near the anchor."""
+    """Call the generation LLM."""
     url = _build_openai_chat_url(models.chat_base_url)
     system_prompt = (
         "You are a medicinal chemistry candidate expansion assistant. "

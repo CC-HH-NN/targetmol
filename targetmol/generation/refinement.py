@@ -26,7 +26,7 @@ def refine_candidate_pool(
     llm_runner=None,
     expansion_payload: dict[str, object] | None = None,
 ) -> dict[str, object]:
-    """Read expanded candidates, run lightweight refinement, and write a shortlist."""
+    """Refine candidates and write a shortlist."""
     payload = expansion_payload
     if payload is None:
         payload = json.loads(input_json_path.read_text(encoding="utf-8"))
@@ -129,7 +129,7 @@ def _evaluate_candidates(
 
 
 def _calculate_refinement_score(row: dict[str, object]) -> float:
-    """Combine filters, synthesizability, and anchor similarity into a stable score."""
+    """Calculate the refinement score."""
     score = 0.0
     if row.get("is_valid", False):
         score += 5.0

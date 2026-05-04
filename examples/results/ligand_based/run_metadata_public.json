@@ -1,5 +1,5 @@
 {
-  "run_id": "20260504_140718_public_clean_ligand_agent",
+  "run_id": "20260504_140718_targetmol_ligand_agent",
   "route": "ligand_based_targetmol",
   "step_names": [],
   "summary_status": "completed",

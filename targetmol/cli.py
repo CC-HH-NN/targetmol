@@ -58,7 +58,7 @@ def main() -> int:
             output_path=run_dir / "route" / "seed_grounding.json",
         )
         resolved_spec = resolve_input_spec_for_run(config, spec, run_dir)
-        iterative_summary = _maybe_run_native_ligand_generation(
+        iterative_summary = _maybe_run_ligand_generation(
             config=config,
             spec=resolved_spec,
             grounded_context=grounded_context,
@@ -99,8 +99,8 @@ def main() -> int:
         return 1
 
 
-def _should_run_native_ligand_generation(spec, grounded_context) -> bool:
-    """Return whether the current input should run the native ligand route first."""
+def _should_run_ligand_generation(spec, grounded_context) -> bool:
+    """Check whether ligand generation should run."""
     if getattr(spec, "candidate_smiles_file", None) is not None:
         return False
     if getattr(spec, "seed_smiles_file", None) is not None:
@@ -114,15 +114,15 @@ def _should_run_native_ligand_generation(spec, grounded_context) -> bool:
     return True
 
 
-def _maybe_run_native_ligand_generation(
+def _maybe_run_ligand_generation(
     *,
     config,
     spec,
     grounded_context,
     run_dir: Path,
 ) -> dict[str, object] | None:
-    """Run the TargetMol ligand candidate route when needed."""
-    if not _should_run_native_ligand_generation(spec, grounded_context):
+    """Run ligand generation when needed."""
+    if not _should_run_ligand_generation(spec, grounded_context):
         return None
 
     expansion_payload = expand_candidate_pool(

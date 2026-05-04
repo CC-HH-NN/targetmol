@@ -25,7 +25,7 @@ def run_molecular_refinement(
     llm_runner=None,
     max_candidates: int = 5,
 ) -> dict[str, object]:
-    """Read a shortlist, run one refinement step, and write before/after records."""
+    """Run one refinement step."""
     payload = json.loads(input_json_path.read_text(encoding="utf-8"))
     shortlist = payload.get("shortlist")
     if not isinstance(shortlist, list):
@@ -143,7 +143,7 @@ def _call_molecular_refinement_llm(
     dominant_issue: str,
     models: ModelsConfig,
 ) -> dict[str, object]:
-    """Call an OpenAI-compatible chat endpoint for one molecular refinement step."""
+    """Call the refinement LLM."""
     url = _build_openai_chat_url(models.chat_base_url)
     body = {
         "model": models.chat_model,

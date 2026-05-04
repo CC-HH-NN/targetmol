@@ -69,7 +69,7 @@ class LigandRecord:
 
 
 def prepare_pdb_inputs_for_run(pdb_id: str, run_dir: Path) -> PreparedPdbInputs:
-    """Download a PDB file and infer target and reference-ligand fields when possible."""
+    """Prepare PDB inputs."""
     normalized_pdb_id = pdb_id.strip().upper()
     inputs_dir = run_dir / "inputs"
     inputs_dir.mkdir(parents=True, exist_ok=True)
@@ -210,7 +210,7 @@ def _write_cocrystal_ligand_sdf(
     pdb_id: str,
     inputs_dir: Path,
 ) -> Path | None:
-    """Extract a reference ligand from PDB co-crystal coordinates and write SDF."""
+    """Write a co-crystal ligand SDF."""
     ligand_lines, ligand_serials = _extract_ligand_pdb_lines(pdb_text, ligand_record)
     if not ligand_lines or not ligand_serials:
         return None
@@ -240,7 +240,7 @@ def _write_cocrystal_ligand_sdf(
 
 
 def _extract_ligand_pdb_lines(pdb_text: str, ligand_record: LigandRecord) -> tuple[list[str], set[str]]:
-    """Collect HETATM lines and atom serials for a selected co-crystal ligand."""
+    """Collect selected ligand PDB lines."""
     ligand_lines = []
     ligand_serials = set()
     for line in pdb_text.splitlines():
@@ -272,7 +272,7 @@ def _extract_ligand_conect_lines(pdb_text: str, ligand_serials: set[str]) -> lis
 
 
 def _is_plausible_ligand_name(residue_name: str) -> bool:
-    """Filter residue names that are unlikely to be small-molecule reference ligands."""
+    """Check whether a residue may be a ligand."""
     if not residue_name:
         return False
     if residue_name in REJECTED_LIGANDS:

@@ -1,7 +1,7 @@
 Route: ligand_based_targetmol
 Screening output: N/A
 Run status: completed
-Run ID: 20260504_140718_public_clean_ligand_agent
+Run ID: 20260504_140718_targetmol_ligand_agent
 Public metadata: run_metadata_public.json
 Iterative summary: iterative_ligand_refinement_public.json
 Iterative stop reason: max_rounds_reached

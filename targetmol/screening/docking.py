@@ -149,7 +149,7 @@ def _choose_ligand_record_from_pdb_text(pdb_text: str) -> LigandRecord | None:
 
 
 def _compute_center_from_receptor_pdb(receptor_pdb: Path) -> tuple[float, float, float]:
-    """Infer docking center from co-crystal ligand coordinates in a receptor PDB."""
+    """Infer the docking center from the receptor."""
     pdb_text = receptor_pdb.read_text(encoding="utf-8", errors="ignore")
     ligand_record = _choose_ligand_record_from_pdb_text(pdb_text)
     if ligand_record is None:
@@ -218,7 +218,7 @@ def _resolve_docking_center(
     receptor_pdb: Path,
     reference_ligand: Path | None,
 ) -> tuple[float, float, float]:
-    """Use the reference-ligand center, otherwise infer it from receptor co-crystal ligand coordinates."""
+    """Resolve the docking center."""
     if reference_ligand is not None:
         return _compute_center_from_reference_ligand(reference_ligand)
     return _compute_center_from_receptor_pdb(receptor_pdb)

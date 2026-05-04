@@ -1,4 +1,4 @@
-"""Natural-language request understanding and structured field completion."""
+"""Request understanding."""
 
 from __future__ import annotations
 
@@ -72,7 +72,7 @@ def enrich_input_spec_from_request(
     *,
     llm_runner=None,
 ) -> InputSpec:
-    """Fill missing fields from request understanding without overwriting explicit inputs."""
+    """Fill missing input fields from text."""
     if not spec.request_text:
         return spec
     understanding = understand_request(
@@ -113,7 +113,7 @@ def _build_openai_chat_url(base_url: str) -> str:
 
 
 def _call_request_understanding_llm(*, request_text: str, models: ModelsConfig) -> dict[str, object]:
-    """Call an OpenAI-compatible chat endpoint for structured request understanding."""
+    """Call the request-understanding LLM."""
     url = _build_openai_chat_url(models.chat_base_url)
     prompt = (
         "You are a drug-discovery task parser. "

@@ -95,7 +95,7 @@ def _extract_pains_alerts(matches: list[object]) -> list[str]:
 
 
 def _fallback_sa_like_score(*, mw: float, logp: float, rotatable_bonds: int, pains_alert_count: int) -> float:
-    """Provide a stable approximate SA-like score when RDKit SA contrib is unavailable."""
+    """Estimate SA when RDKit SA is unavailable."""
     score = 1.0 + (mw / 250.0) + max(logp, 0.0) * 0.4 + rotatable_bonds * 0.35 + pains_alert_count * 0.5
     return max(1.0, min(10.0, score))
 

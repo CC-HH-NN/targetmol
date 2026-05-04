@@ -7,6 +7,6 @@ Iterative Ligand Refinement:
 - Accepted updates: 8
 - Final candidate count: 4
 - Dominant issues: minor_optimization=6, lipinski=3
-- Fallback reasons: invalid_update=1
+- Generation issues: invalid_update=1
 - Improvements: lipinski_fixed=3, sa_improved=4
 本报告基于计算生成、对接和规则筛选结果，仅用于 computational hit discovery 参考，不代表实验验证结论。

@@ -1,7 +1,7 @@
 Route: screen_only
 Screening output: final_report_public.json
 Run status: completed
-Run ID: 20260504_140321_public_clean_screen_examples
+Run ID: 20260504_140321_targetmol_screen_examples
 Planned steps (1): targetmol_screen
 Public metadata: run_metadata_public.json
 Candidate table: top_candidates.csv

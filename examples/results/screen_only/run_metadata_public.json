@@ -1,5 +1,5 @@
 {
-  "run_id": "20260504_140321_public_clean_screen_examples",
+  "run_id": "20260504_140321_targetmol_screen_examples",
   "route": "screen_only",
   "step_names": [
     "targetmol_screen"

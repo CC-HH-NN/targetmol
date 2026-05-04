@@ -18,7 +18,7 @@ def rank_hits_by_embedding(
     models: ModelsConfig,
     embedding_runner=None,
 ) -> list[dict[str, str]]:
-    """Call the embedding model and rank search evidence by semantic similarity."""
+    """Rank search hits with embeddings."""
     if not hits:
         return []
     query = _build_embedding_query(

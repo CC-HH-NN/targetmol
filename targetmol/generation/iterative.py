@@ -1,4 +1,4 @@
-"""Organize ligand-based candidate generation into iterative refinement rounds."""
+"""Iterative ligand refinement."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ def run_iterative_ligand_refinement(
     iterations: int,
     shortlist_size: int = 12,
 ) -> dict[str, object]:
-    """Run iterative shortlisting and molecular refinement around expanded candidates."""
+    """Run refinement rounds."""
     max_rounds = max(1, int(iterations))
     route_iterations_dir = run_dir / "route" / "iterations"
     normalized_iterations_dir = run_dir / "normalized" / "iterations"

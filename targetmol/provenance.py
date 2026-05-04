@@ -50,7 +50,7 @@ def read_run_metadata(directory: Path) -> dict[str, object]:
 
 
 def update_run_metadata(directory: Path, **fields: object) -> Path:
-    """Merge run-level metadata without overwriting planning or execution fields."""
+    """Merge run metadata."""
     metadata_path = Path(directory) / RUN_METADATA_FILENAME
     metadata_path.parent.mkdir(parents=True, exist_ok=True)
     metadata = read_run_metadata(metadata_path.parent)

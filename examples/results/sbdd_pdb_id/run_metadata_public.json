@@ -1,5 +1,5 @@
 {
-  "run_id": "20260504_140529_public_clean_6jx0_sbdd",
+  "run_id": "20260504_140529_targetmol_6jx0_sbdd",
   "route": "sbdd_drugflow",
   "step_names": [
     "drugflow_generate",

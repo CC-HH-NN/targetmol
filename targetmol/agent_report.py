@@ -20,7 +20,7 @@ def write_agent_report(
     iterative_summary_path: Path | None = None,
     screening_report_path: Path | None = None,
 ) -> Path:
-    """Write native refinement and screening results as a readable report."""
+    """Write the final agent report."""
     final_dir.mkdir(parents=True, exist_ok=True)
     lines = [
         "TargetMol Agent Report",
@@ -58,7 +58,7 @@ def _build_iterative_section(payload: dict[str, object]) -> list[str]:
     if isinstance(final_candidates, list):
         lines.append(f"- Final candidate count: {len(final_candidates)}")
     lines.extend(_format_count_map("Dominant issues", payload.get("dominant_issue_counts")))
-    lines.extend(_format_count_map("Fallback reasons", payload.get("fallback_counts")))
+    lines.extend(_format_count_map("Generation issues", payload.get("fallback_counts")))
     lines.extend(_format_count_map("Improvements", payload.get("improvement_counts")))
     return lines
 
