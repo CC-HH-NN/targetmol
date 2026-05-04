@@ -30,14 +30,13 @@ TargetMol supports three main workflows:
 - DrugFlow adapter for pocket-conditioned molecular generation.
 - Native TargetMol screening pipeline with docking, Lipinski, PAINS, SA score, basic molecular properties, ranking, and final reports.
 - LLM-assisted ligand-based workflow with target grounding, search evidence, embedding-based evidence ranking, candidate expansion, and iterative molecular refinement.
-- Reproducible run directories with normalized files, command records, logs, execution index, and provenance metadata.
 
 ## Installation
 
 Clone the repository and create a Python environment:
 
 ```bash
-git clone <YOUR_REPOSITORY_URL> targetmol
+git clone https://github.com/CC-HH-NN/targetmol.git
 cd targetmol
 
 python3 -m venv .venv
@@ -49,8 +48,7 @@ For real docking and molecular-property calculation, the runtime environment mus
 
 - RDKit
 - gnina
-- A working conda or system environment for external command execution
-- DrugFlow and a compatible DrugFlow checkpoint if structure-based generation is enabled
+- [DrugFlow](https://github.com/LPDI-EPFL/DrugFlow) and a compatible DrugFlow checkpoint if structure-based generation is enabled
 
 ## Configuration
 
@@ -162,48 +160,6 @@ Typical outputs include:
 - `screening/final/final_report.csv`: ranked candidate table.
 - `final/summary.txt`: concise run summary.
 - `final/agent_report.txt`: natural-language agent report.
-
-## Validated Demonstration Cases
-
-The current public release includes three fixed demonstration cases:
-
-| Case | Route | Public evidence |
-| --- | --- | --- |
-| PDB ID `6JX0` with natural-language EGFR request | `sbdd_drugflow` | [`examples/results/sbdd_pdb_id/`](examples/results/sbdd_pdb_id/) |
-| PDB ID `6JX0` with uploaded SMILES candidates | `screen_only` | [`examples/results/screen_only/`](examples/results/screen_only/) |
-| Natural-language EGFR ligand-design request | `ligand_based_targetmol` | [`examples/results/ligand_based/`](examples/results/ligand_based/) |
-
-The sanitized result excerpts include run summaries, compact candidate tables, public route metadata, and agent reports.
-
-## Repository Structure
-
-```text
-targetmol/
-  cli.py                    Unified command-line entry point
-  workflow.py               Route planning and execution orchestration
-  inputs.py                 Input normalization for PDB, SDF, and SMILES
-  pdb_prep.py               PDB retrieval and reference-ligand extraction
-  adapters/drugflow.py      DrugFlow inference adapter
-  generation/               Ligand-based generation and refinement modules
-  screening/                Docking, property calculation, filters, and ranking
-  target_context/           Target grounding, search evidence, and embeddings
-examples/
-  inputs/                   Small public input files
-  cases/                    Reproducible example commands
-  results/                  Sanitized output excerpts
-licenses/                   Third-party license notes
-```
-
-## Third-Party Components
-
-TargetMol integrates external scientific software where appropriate instead of reimplementing validated engines.
-
-- DrugFlow is used for structure-based molecule generation when protein and reference-ligand inputs are available.
-- gnina is used for molecular docking.
-- RDKit is used for cheminformatics operations and molecular descriptors.
-- LLM and embedding providers are used for natural-language task understanding and evidence ranking.
-
-See [`licenses/`](licenses/) for included third-party license notes.
 
 ## License
 
