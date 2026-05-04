@@ -165,8 +165,6 @@ Typical outputs include:
 
 TargetMol source code is released under the MIT License. See [`LICENSE`](LICENSE).
 
-Third-party components remain under their respective licenses.
-
 ## Citation
 
 If you use TargetMol in academic work, please cite this repository. A formal citation entry will be added when available.
