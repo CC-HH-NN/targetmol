@@ -1,4 +1,4 @@
-"""记录命令、时间戳和路径，便于复现与排错。"""
+"""Record commands, timestamps, and paths for reproducibility."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ RUN_METADATA_FILENAME = "run_metadata.json"
 
 @dataclass
 class CommandRecord:
-    """单条外部命令记录。"""
+    """Single external command record."""
 
     step: str
     command: list[str]
@@ -22,7 +22,7 @@ class CommandRecord:
 
 
 class ProvenanceRecorder:
-    """负责把命令记录写入 provenance 目录。"""
+    """Write command records into the provenance directory."""
 
     def __init__(self, directory: Path):
         self.directory = Path(directory)
@@ -30,7 +30,7 @@ class ProvenanceRecorder:
         self.command_log = self.directory / "commands.jsonl"
 
     def record_command(self, *, step: str, command: list[str], cwd: Path) -> None:
-        """追加一条命令记录。"""
+        """Append one command record."""
         record = CommandRecord(
             step=step,
             command=command,
@@ -42,7 +42,7 @@ class ProvenanceRecorder:
 
 
 def read_run_metadata(directory: Path) -> dict[str, object]:
-    """读取 run 级别 metadata，供 summary 和 provenance 复用。"""
+    """Read run-level metadata for summaries and provenance."""
     metadata_path = Path(directory) / RUN_METADATA_FILENAME
     if not metadata_path.exists():
         return {}
@@ -50,7 +50,7 @@ def read_run_metadata(directory: Path) -> dict[str, object]:
 
 
 def update_run_metadata(directory: Path, **fields: object) -> Path:
-    """合并写入 run 级别 metadata，避免 planning 和 execution 阶段互相覆盖。"""
+    """Merge run-level metadata without overwriting planning or execution fields."""
     metadata_path = Path(directory) / RUN_METADATA_FILENAME
     metadata_path.parent.mkdir(parents=True, exist_ok=True)
     metadata = read_run_metadata(metadata_path.parent)

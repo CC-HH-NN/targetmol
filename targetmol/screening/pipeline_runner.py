@@ -1,4 +1,4 @@
-"""clean-room screening 子命令入口。"""
+"""Internal screening subcommand entry point."""
 
 from __future__ import annotations
 
@@ -9,8 +9,8 @@ from targetmol.screening.pipeline import run_screening_pipeline
 
 
 def main(argv: list[str] | None = None) -> int:
-    """执行 screening runner。"""
-    parser = argparse.ArgumentParser(description="TargetMol clean-room screening runner")
+    """Run the screening runner."""
+    parser = argparse.ArgumentParser(description="TargetMol screening runner")
     parser.add_argument("--smiles-file", required=True)
     parser.add_argument("--receptor-pdb", required=True)
     parser.add_argument("--reference-ligand", required=False)

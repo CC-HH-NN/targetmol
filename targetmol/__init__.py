@@ -1,4 +1,4 @@
-"""TargetMol 包初始化模块。"""
+"""TargetMol package initialization."""
 
 from targetmol.config import load_config
 

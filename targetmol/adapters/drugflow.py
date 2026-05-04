@@ -1,4 +1,4 @@
-"""DrugFlow 适配层。"""
+"""DrugFlow adapter layer."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ def build_drugflow_command(
     pocket_distance_cutoff: float,
     device: str,
 ) -> list[str]:
-    """构建 DrugFlow 官方 generate.py 命令。"""
+    """Build the DrugFlow generate.py command."""
     return [
         "python",
         "src/generate.py",
@@ -43,12 +43,12 @@ def build_drugflow_command(
 
 
 def build_drugflow_runner_command(*, conda_env: str, root: Path, command: list[str]) -> list[str]:
-    """把 DrugFlow 命令包装成 conda run 调用。"""
+    """Wrap a DrugFlow command in conda run."""
     return ["conda", "run", "-n", conda_env, *command]
 
 
 def build_sdf_to_smiles_command(*, conda_env: str, sdf_path: Path, smiles_path: Path) -> list[str]:
-    """构建把 DrugFlow SDF 转为 SMILES 的辅助命令。"""
+    """Build the helper command that converts DrugFlow SDF output to SMILES."""
     return [
         "conda",
         "run",

@@ -1,4 +1,4 @@
-"""clean-room screening 数据结构。"""
+"""Screening data structures."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 
 @dataclass
 class ScreeningCandidate:
-    """统一候选分子记录。"""
+    """Unified candidate molecule record."""
 
     name: str
     smiles: str
@@ -17,7 +17,7 @@ class ScreeningCandidate:
 
 @dataclass
 class DockingResult:
-    """单个候选的对接结果。"""
+    """Docking result for one candidate."""
 
     name: str
     smiles: str
@@ -27,7 +27,7 @@ class DockingResult:
 
 @dataclass
 class FilterResult:
-    """单个候选的筛选规则结果。"""
+    """Screening-property result for one candidate."""
 
     name: str
     smiles: str
@@ -40,7 +40,7 @@ class FilterResult:
 
 @dataclass
 class ReportRow:
-    """最终报告中的稳定输出行。"""
+    """Stable output row in the final report."""
 
     name: str
     smiles: str

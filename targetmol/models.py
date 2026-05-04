@@ -1,4 +1,4 @@
-"""TargetMol 配置数据结构，供各模块统一复用。"""
+"""TargetMol configuration data structures."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from pathlib import Path
 
 @dataclass
 class ProjectConfig:
-    """项目级配置。"""
+    """Project-level configuration."""
 
     name: str
     runs_dir: Path
@@ -16,14 +16,14 @@ class ProjectConfig:
 
 @dataclass
 class PathsConfig:
-    """外部仓库路径配置。"""
+    """External repository path configuration."""
 
     drugflow_root: Path
 
 
 @dataclass
 class EnvsConfig:
-    """运行环境名称配置。"""
+    """Runtime environment name configuration."""
 
     drugflow_conda_env: str
     screening_conda_env: str
@@ -31,7 +31,7 @@ class EnvsConfig:
 
 @dataclass
 class ModelsConfig:
-    """聊天与嵌入模型配置。"""
+    """Chat and embedding model configuration."""
 
     chat_provider: str
     chat_base_url: str
@@ -46,7 +46,7 @@ class ModelsConfig:
 
 @dataclass
 class DrugFlowConfig:
-    """DrugFlow 运行配置。"""
+    """DrugFlow runtime configuration."""
 
     checkpoint: Path
     device: str
@@ -58,7 +58,7 @@ class DrugFlowConfig:
 
 @dataclass
 class ScreeningConfig:
-    """TargetMol 自研筛选配置。"""
+    """TargetMol screening configuration."""
 
     top_k: int
     exhaustiveness: int
@@ -68,14 +68,14 @@ class ScreeningConfig:
 
 @dataclass
 class SearchConfig:
-    """联网检索配置。"""
+    """Web search configuration."""
 
     serper_api_key: str
 
 
 @dataclass
 class LigandGenerationConfig:
-    """TargetMol ligand 生成配置。"""
+    """TargetMol ligand generation configuration."""
 
     iterations: int
     num_smiles: int
@@ -83,7 +83,7 @@ class LigandGenerationConfig:
 
 @dataclass
 class ToolsConfig:
-    """外部工具路径配置。"""
+    """External tool path configuration."""
 
     vina: str
     gnina: str
@@ -93,7 +93,7 @@ class ToolsConfig:
 
 @dataclass
 class TargetMolConfig:
-    """TargetMol 根配置对象。"""
+    """Root TargetMol configuration object."""
 
     project: ProjectConfig
     paths: PathsConfig

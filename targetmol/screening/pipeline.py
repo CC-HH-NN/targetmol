@@ -1,4 +1,4 @@
-"""clean-room screening 总流程。"""
+"""Internal screening pipeline."""
 
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ def run_screening_pipeline(
     n_threads: int,
     box_size: tuple[float, float, float],
 ) -> dict[str, object]:
-    """执行 clean-room screening 并写出最终报告。"""
+    """Run internal screening and write the final report."""
     started_at = perf_counter()
     candidates = load_normalized_smiles_file(normalized_smiles_file)
     candidate_index = {candidate.name: candidate for candidate in candidates}

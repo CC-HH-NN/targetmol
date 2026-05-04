@@ -1,4 +1,4 @@
-"""读取 TargetMol 统一 YAML 配置并转换为强类型对象。"""
+"""Load TargetMol YAML configuration into typed objects."""
 
 from pathlib import Path
 
@@ -19,7 +19,7 @@ from targetmol.models import (
 
 
 def _resolve_path(base_dir: Path, raw_path: str) -> Path:
-    """把配置中的路径解析为绝对路径，支持相对路径写法。"""
+    """Resolve configured paths to absolute paths."""
     candidate = Path(raw_path).expanduser()
     if candidate.is_absolute():
         return candidate
@@ -27,7 +27,7 @@ def _resolve_path(base_dir: Path, raw_path: str) -> Path:
 
 
 def _load_screening_config(data: dict) -> ScreeningConfig:
-    """读取当前正式的 screening 配置段。"""
+    """Read the screening configuration section."""
     raw = data["screening"]
     return ScreeningConfig(
         top_k=raw["top_k"],
@@ -38,7 +38,7 @@ def _load_screening_config(data: dict) -> ScreeningConfig:
 
 
 def load_config(path: str | Path) -> TargetMolConfig:
-    """从 YAML 文件加载 TargetMol 配置。"""
+    """Load TargetMol configuration from a YAML file."""
     config_path = Path(path).expanduser().resolve()
     base_dir = config_path.parent
     data = yaml.safe_load(config_path.read_text(encoding="utf-8"))

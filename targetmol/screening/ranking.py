@@ -1,17 +1,17 @@
-"""clean-room screening 排序逻辑。"""
+"""Internal screening ranking logic."""
 
 from __future__ import annotations
 
 
 def _safe_float(value: object, default: float) -> float:
-    """把可选数值安全转成 float。"""
+    """Convert an optional value to float safely."""
     if value is None:
         return default
     return float(value)
 
 
 def _sort_key(row: dict[str, object]) -> tuple[int, int, int, float, int, float, str]:
-    """生成稳定排序键。"""
+    """Build a stable ranking key."""
     is_valid_penalty = 0 if row.get("is_valid", True) else 1
     lipinski_penalty = 0 if row.get("lipinski_pass", False) else 1
     pains_status = str(row.get("pains_status", "unavailable"))
@@ -36,7 +36,7 @@ def _sort_key(row: dict[str, object]) -> tuple[int, int, int, float, int, float,
 
 
 def rank_screening_rows(rows: list[dict[str, object]]) -> list[dict[str, object]]:
-    """按 docking、规则过滤和降级状态形成稳定排序。"""
+    """Rank candidates by docking, filters, and status fields."""
     ranked = [dict(row) for row in sorted(rows, key=_sort_key)]
     for index, row in enumerate(ranked, start=1):
         row["rank"] = index

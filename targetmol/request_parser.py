@@ -1,4 +1,4 @@
-"""把自然语言请求解析成 TargetMol 可执行的标准输入。"""
+"""Parse natural-language requests into TargetMol input fields."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ PDB_ID_PATTERN = re.compile(r"\b([0-9][A-Za-z0-9]{3})\b")
 
 
 def extract_pdb_id(request_text: str) -> str | None:
-    """从自然语言请求中提取 PDB ID。"""
+    """Extract a PDB ID from a natural-language request."""
     match = PDB_ID_PATTERN.search(request_text)
     if match is None:
         return None
@@ -31,7 +31,7 @@ def build_input_spec_from_request(
     disease: str | None = None,
     run_name: str,
 ) -> InputSpec:
-    """根据自然语言请求和显式文件参数构建输入对象。"""
+    """Build an input object from request text and explicit file arguments."""
     return InputSpec(
         pdb_id=pdb_id or extract_pdb_id(request_text),
         pdb_file=pdb_file,

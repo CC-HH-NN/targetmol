@@ -1,4 +1,4 @@
-"""TargetMol 统一命令行入口。"""
+"""TargetMol unified command-line entry point."""
 
 import argparse
 import json
@@ -26,7 +26,7 @@ from targetmol.workflow import (
 
 
 def build_parser() -> argparse.ArgumentParser:
-    """构建 CLI 参数解析器。"""
+    """Build the CLI argument parser."""
     parser = argparse.ArgumentParser(description="TargetMol unified CLI")
     parser.add_argument("--config", default="targetmol.yaml")
     parser.add_argument("--request")
@@ -44,7 +44,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main() -> int:
-    """执行命令行入口。"""
+    """Run the CLI entry point."""
     parser = build_parser()
     try:
         args = parser.parse_args()
@@ -58,7 +58,7 @@ def main() -> int:
             output_path=run_dir / "route" / "seed_grounding.json",
         )
         resolved_spec = resolve_input_spec_for_run(config, spec, run_dir)
-        iterative_summary = _maybe_run_clean_room_ligand_generation(
+        iterative_summary = _maybe_run_native_ligand_generation(
             config=config,
             spec=resolved_spec,
             grounded_context=grounded_context,
@@ -99,8 +99,8 @@ def main() -> int:
         return 1
 
 
-def _should_run_clean_room_ligand_generation(spec, grounded_context) -> bool:
-    """判断当前输入是否需要先走 clean-room ligand 候选主链。"""
+def _should_run_native_ligand_generation(spec, grounded_context) -> bool:
+    """Return whether the current input should run the native ligand route first."""
     if getattr(spec, "candidate_smiles_file", None) is not None:
         return False
     if getattr(spec, "seed_smiles_file", None) is not None:
@@ -114,15 +114,15 @@ def _should_run_clean_room_ligand_generation(spec, grounded_context) -> bool:
     return True
 
 
-def _maybe_run_clean_room_ligand_generation(
+def _maybe_run_native_ligand_generation(
     *,
     config,
     spec,
     grounded_context,
     run_dir: Path,
 ) -> dict[str, object] | None:
-    """按需执行 TargetMol 自己的 ligand 候选主链。"""
-    if not _should_run_clean_room_ligand_generation(spec, grounded_context):
+    """Run the TargetMol ligand candidate route when needed."""
+    if not _should_run_native_ligand_generation(spec, grounded_context):
         return None
 
     expansion_payload = expand_candidate_pool(
@@ -161,7 +161,7 @@ def _maybe_run_clean_room_ligand_generation(
 
 
 def _write_empty_iterative_summary(*, run_dir: Path, final_smiles_path: Path, stop_reason: str) -> dict[str, object]:
-    """生成空候选摘要，避免失败扩增回退到旧生成路线。"""
+    """Write an empty candidate summary after unsuccessful expansion."""
     summary = {
         "stop_reason": stop_reason,
         "rounds": [],
@@ -192,7 +192,7 @@ def _write_empty_iterative_summary(*, run_dir: Path, final_smiles_path: Path, st
 
 
 def _attach_iterative_candidates(spec, iterative_summary: dict[str, object] | None):
-    """把多轮生成结果接回后续 workflow 的候选输入。"""
+    """Attach iterative generation results as downstream workflow candidates."""
     if iterative_summary is None or getattr(spec, "candidate_smiles_file", None) is not None:
         return spec
     if getattr(spec, "pdb_file", None) is not None and getattr(spec, "reference_ligand", None) is not None:

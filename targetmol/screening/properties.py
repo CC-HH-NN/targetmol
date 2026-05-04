@@ -1,4 +1,4 @@
-"""clean-room screening 规则和性质评分。"""
+"""Screening rules and property scoring."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from targetmol.screening.types import ScreeningCandidate
 
 
 def _load_rdkit_backend() -> dict[str, Any] | None:
-    """按需加载 RDKit 相关模块。"""
+    """Load RDKit modules on demand."""
     try:
         from rdkit import Chem
         from rdkit.Chem import Crippen, Descriptors, FilterCatalog, Lipinski
@@ -40,7 +40,7 @@ def _load_rdkit_backend() -> dict[str, Any] | None:
 
 
 def _build_invalid_result(candidate: ScreeningCandidate, error: str) -> dict[str, object]:
-    """生成稳定的失败结果。"""
+    """Build a stable failed property row."""
     return {
         "name": candidate.name,
         "smiles": candidate.smiles,
@@ -64,7 +64,7 @@ def _build_invalid_result(candidate: ScreeningCandidate, error: str) -> dict[str
 
 
 def _create_pains_catalog(backend: dict[str, Any]):
-    """创建 PAINS 过滤目录，兼容不同 RDKit 接口。"""
+    """Create a PAINS filter catalog across RDKit interfaces."""
     params_binding = backend["FilterCatalogParams"]
     catalog_module = backend["FilterCatalog"]
     params_class = getattr(params_binding, "FilterCatalogParams", params_binding)
@@ -75,12 +75,12 @@ def _create_pains_catalog(backend: dict[str, Any]):
     elif hasattr(params, "AddCatalogs"):
         params.AddCatalogs(pains_enum)
     else:
-        raise AttributeError("当前 RDKit 不支持 PAINS 目录初始化。")
+        raise AttributeError("The current RDKit build does not support PAINS catalog initialization.")
     return catalog_module.FilterCatalog(params)
 
 
 def _extract_pains_alerts(matches: list[object]) -> list[str]:
-    """把 RDKit 告警对象转成稳定文本。"""
+    """Convert an RDKit alert object into stable text."""
     alerts: list[str] = []
     for match in matches:
         if hasattr(match, "GetDescription"):
@@ -95,7 +95,7 @@ def _extract_pains_alerts(matches: list[object]) -> list[str]:
 
 
 def _fallback_sa_like_score(*, mw: float, logp: float, rotatable_bonds: int, pains_alert_count: int) -> float:
-    """在缺少 RDKit SA contrib 时给出第一阶段稳定近似分数。"""
+    """Provide a stable approximate SA-like score when RDKit SA contrib is unavailable."""
     score = 1.0 + (mw / 250.0) + max(logp, 0.0) * 0.4 + rotatable_bonds * 0.35 + pains_alert_count * 0.5
     return max(1.0, min(10.0, score))
 
@@ -109,7 +109,7 @@ def _calculate_sa_like_score(
     rotatable_bonds: int,
     pains_alert_count: int,
 ) -> tuple[float, str]:
-    """优先使用 RDKit SA Score，缺失时回退到稳定近似。"""
+    """Use RDKit SA Score when available, otherwise use the approximation."""
     sascorer = backend.get("sascorer")
     if sascorer is not None and hasattr(sascorer, "calculateScore"):
         return float(sascorer.calculateScore(mol)), "rdkit_sascorer"
@@ -125,14 +125,14 @@ def _calculate_sa_like_score(
 
 
 def evaluate_candidate_properties(candidate: ScreeningCandidate) -> dict[str, object]:
-    """计算第一阶段需要的基础性质和规则标记。"""
+    """Compute basic properties and rule flags for screening."""
     backend = _load_rdkit_backend()
     if backend is None:
-        return _build_invalid_result(candidate, "RDKit 不可用，无法计算性质。")
+        return _build_invalid_result(candidate, "RDKit is unavailable, so properties cannot be computed.")
 
     mol = backend["Chem"].MolFromSmiles(candidate.smiles)
     if mol is None:
-        return _build_invalid_result(candidate, "不是有效的 SMILES。")
+        return _build_invalid_result(candidate, "Not a valid SMILES.")
 
     mw = float(backend["Descriptors"].MolWt(mol))
     logp = float(backend["Crippen"].MolLogP(mol))
@@ -148,7 +148,7 @@ def evaluate_candidate_properties(candidate: ScreeningCandidate) -> dict[str, ob
     except Exception as exc:
         alerts = []
         pains_status = "degraded"
-        pains_error = f"PAINS 目录初始化失败：{exc}"
+        pains_error = f"PAINS catalog initialization failed：{exc}"
 
     lipinski_violations = sum(
         [

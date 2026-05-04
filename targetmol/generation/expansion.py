@@ -1,4 +1,4 @@
-"""围绕可信锚点扩增候选分子池。"""
+"""Expand a candidate molecule pool around a trusted anchor."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ PLACEHOLDER_PREFIXES = ("YOUR_", "your_")
 
 
 def read_seed_smiles_file(path: Path) -> list[dict[str, str]]:
-    """读取 seed smiles 文件并转成统一记录。"""
+    """Read a seed SMILES file into normalized records."""
     records: list[dict[str, str]] = []
     for index, raw_line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
         line = raw_line.strip()
@@ -25,11 +25,11 @@ def read_seed_smiles_file(path: Path) -> list[dict[str, str]]:
         else:
             parts = line.split(maxsplit=1)
         if len(parts) != 2:
-            raise ValueError(f"{path} 第 {index} 行不是有效的 seed smiles 记录。")
+            raise ValueError(f"{path} line {index} is not a valid seed SMILES record.")
         smiles = parts[0].strip()
         name = parts[1].strip()
         if not smiles or not name:
-            raise ValueError(f"{path} 第 {index} 行不是有效的 seed smiles 记录。")
+            raise ValueError(f"{path} line {index} is not a valid seed SMILES record.")
         records.append({"name": name, "smiles": smiles, "source": "seed_file"})
     return records
 
@@ -43,7 +43,7 @@ def expand_candidate_pool(
     output_smiles_path: Path,
     llm_runner=None,
 ) -> dict[str, object]:
-    """优先围绕 seed 或 anchor 落候选池，并写入运行目录。"""
+    """Build a candidate pool around seed or anchor molecules and write run artifacts."""
     if seed_smiles_file is not None:
         candidates = _deduplicate_candidates(read_seed_smiles_file(seed_smiles_file))
         return _write_expansion_outputs(
@@ -97,10 +97,10 @@ def expand_candidate_pool(
 
 
 def _parse_generated_candidates(payload: dict[str, object]) -> list[dict[str, str]]:
-    """解析 LLM 返回的候选列表。"""
+    """Parse the candidate list returned by the LLM."""
     items = payload.get("candidates")
     if not isinstance(items, list):
-        raise RuntimeError("candidate expansion LLM 返回缺少 candidates 列表。")
+        raise RuntimeError("Candidate expansion LLM response is missing the candidates list.")
     records: list[dict[str, str]] = []
     for index, item in enumerate(items, start=1):
         if not isinstance(item, dict):
@@ -121,7 +121,7 @@ def _parse_generated_candidates(payload: dict[str, object]) -> list[dict[str, st
 
 
 def _anchor_reference_candidate(anchor_smiles: str) -> list[dict[str, str]]:
-    """LLM 正常生成时，把锚点作为可追溯参考候选。"""
+    """Add the anchor as a traceable reference candidate when LLM generation succeeds."""
     return [
         {
             "name": "anchor_0001",
@@ -133,7 +133,7 @@ def _anchor_reference_candidate(anchor_smiles: str) -> list[dict[str, str]]:
 
 
 def _deduplicate_candidates(records: list[dict[str, str]]) -> list[dict[str, str]]:
-    """按 SMILES 去重，保留首次出现的候选。"""
+    """Deduplicate candidates by SMILES while preserving first occurrence."""
     seen: set[str] = set()
     unique: list[dict[str, str]] = []
     for record in records:
@@ -154,7 +154,7 @@ def _write_expansion_outputs(
     output_json_path: Path,
     output_smiles_path: Path,
 ) -> dict[str, object]:
-    """把候选扩增结果写入 JSON 和标准 smiles 文件。"""
+    """Write candidate expansion results to JSON and SMILES files."""
     output_json_path.parent.mkdir(parents=True, exist_ok=True)
     output_smiles_path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
@@ -179,7 +179,7 @@ def _write_expansion_outputs(
 
 
 def _call_expansion_llm(*, grounded_context: GroundedTargetContext, models: ModelsConfig) -> dict[str, object]:
-    """调用 OpenAI 兼容聊天接口生成锚点附近的候选。"""
+    """Call an OpenAI-compatible chat endpoint to generate candidates near the anchor."""
     url = _build_openai_chat_url(models.chat_base_url)
     system_prompt = (
         "You are a medicinal chemistry candidate expansion assistant. "
@@ -220,10 +220,10 @@ def _call_expansion_llm(*, grounded_context: GroundedTargetContext, models: Mode
         with request.urlopen(req) as response:
             response_payload = json.loads(response.read().decode("utf-8"))
     except error.URLError as exc:
-        raise RuntimeError(f"candidate expansion LLM 调用失败: {exc}") from exc
+        raise RuntimeError(f"candidate expansion LLM call failed: {exc}") from exc
     choices = response_payload.get("choices") or []
     if not choices:
-        raise RuntimeError("candidate expansion LLM 返回缺少 choices。")
+        raise RuntimeError("Candidate expansion LLM response is missing choices.")
     message = choices[0].get("message") or {}
     content = message.get("content")
     if isinstance(content, list):
@@ -233,15 +233,15 @@ def _call_expansion_llm(*, grounded_context: GroundedTargetContext, models: Mode
                 text_parts.append(str(block.get("text", "")))
         content = "".join(text_parts).strip()
     if not isinstance(content, str) or not content.strip():
-        raise RuntimeError("candidate expansion LLM 返回缺少 content。")
+        raise RuntimeError("Candidate expansion LLM response is missing content.")
     parsed = json.loads(content)
     if not isinstance(parsed, dict):
-        raise RuntimeError("candidate expansion LLM 未返回 JSON object。")
+        raise RuntimeError("Candidate expansion LLM did not return a JSON object.")
     return parsed
 
 
 def _build_openai_chat_url(base_url: str) -> str:
-    """从 OpenAI 兼容 base url 拼出 chat completions 地址。"""
+    """Build a chat completions URL from an OpenAI-compatible base URL."""
     normalized = base_url.rstrip("/")
     if normalized.endswith("/chat/completions"):
         return normalized
@@ -251,7 +251,7 @@ def _build_openai_chat_url(base_url: str) -> str:
 
 
 def _normalize_text(value: object) -> str | None:
-    """把可选文本值规范化为稳定字符串。"""
+    """Normalize an optional text value into a stable string."""
     if value is None:
         return None
     text = str(value).strip()
@@ -259,6 +259,6 @@ def _normalize_text(value: object) -> str | None:
 
 
 def _is_placeholder(value: str) -> bool:
-    """判断配置值是否仍是占位内容。"""
+    """Return whether a configuration value is still a placeholder."""
     stripped = value.strip()
     return not stripped or stripped.startswith(PLACEHOLDER_PREFIXES)

@@ -1,4 +1,4 @@
-"""统一执行外部命令并保存日志。"""
+"""Run external commands and save logs."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from targetmol.provenance import ProvenanceRecorder
 
 @dataclass
 class CommandResult:
-    """外部命令执行结果。"""
+    """External command execution result."""
 
     command: list[str]
     cwd: Path
@@ -30,7 +30,7 @@ def run_command(
     provenance: ProvenanceRecorder,
     env: dict[str, str] | None = None,
 ) -> CommandResult:
-    """执行外部命令，并把日志写入运行目录。"""
+    """Run an external command and write stdout/stderr logs."""
     logs_dir.mkdir(parents=True, exist_ok=True)
     provenance.record_command(step=step, command=command, cwd=cwd)
     runtime_env = os.environ.copy()

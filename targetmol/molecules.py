@@ -1,4 +1,4 @@
-"""整理候选分子记录与 SMILES 文件。"""
+"""Handle candidate molecule records and SMILES files."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 def deduplicate_smiles_records(records: list[dict]) -> list[dict]:
-    """按 SMILES 去重，保留首次出现的记录。"""
+    """Deduplicate records by SMILES while preserving first occurrence."""
     seen: set[str] = set()
     unique: list[dict] = []
     for record in records:
@@ -19,7 +19,7 @@ def deduplicate_smiles_records(records: list[dict]) -> list[dict]:
 
 
 def write_smiles_file(records: list[dict], output_path: Path) -> Path:
-    """把候选分子写成 name-tab-smiles 文件。"""
+    """Write candidates as name-tab-smiles records."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with output_path.open("w", encoding="utf-8") as handle:
         for record in records:

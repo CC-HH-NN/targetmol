@@ -1,4 +1,4 @@
-"""clean-room docking 命令构建。"""
+"""Docking command construction."""
 
 from __future__ import annotations
 
@@ -52,7 +52,7 @@ def build_gnina_command(
     n_poses: int,
     n_threads: int,
 ) -> list[str]:
-    """构建 gnina 对接命令。"""
+    """Build the gnina docking command."""
     return [
         gnina_bin,
         "--receptor",
@@ -83,28 +83,28 @@ def build_gnina_command(
 
 
 def _safe_filename(name: str) -> str:
-    """把候选名称转换成稳定文件名。"""
+    """Convert a candidate name into a stable filename."""
     cleaned = re.sub(r"[^A-Za-z0-9_.-]+", "_", name).strip("._")
     return cleaned or "candidate"
 
 
 def _load_rdkit():
-    """延迟加载 RDKit，避免无关路径在导入时直接失败。"""
+    """Import RDKit lazily so unrelated paths can load without RDKit."""
     try:
         from rdkit import Chem
         from rdkit.Chem import AllChem
     except ImportError as exc:
-        raise RuntimeError("RDKit 不可用，无法为 clean-room screening 准备 3D 配体。") from exc
+        raise RuntimeError("RDKit is unavailable, so 3D ligands cannot be prepared for screening.") from exc
     return Chem, AllChem
 
 
 def _compute_center_from_reference_ligand(reference_ligand: Path) -> tuple[float, float, float]:
-    """根据参考配体 3D 坐标计算 docking 中心。"""
+    """Compute the docking center from reference-ligand 3D coordinates."""
     Chem, _ = _load_rdkit()
     supplier = Chem.SDMolSupplier(str(reference_ligand), removeHs=False)
     mol = supplier[0] if supplier and len(supplier) > 0 else None
     if mol is None or mol.GetNumConformers() == 0:
-        raise RuntimeError(f"无法从参考配体读取 3D 坐标: {reference_ligand}")
+        raise RuntimeError(f"Unable to read 3D coordinates from reference ligand: {reference_ligand}")
 
     conf = mol.GetConformer()
     coordinates = []
@@ -115,7 +115,7 @@ def _compute_center_from_reference_ligand(reference_ligand: Path) -> tuple[float
 
 
 def _choose_ligand_record_from_pdb_text(pdb_text: str) -> LigandRecord | None:
-    """从 PDB 文本中选一个最像共晶配体的残基记录。"""
+    """Select the most ligand-like co-crystal residue from PDB text."""
     residue_atoms: dict[str, list[tuple[float, float, float]]] = {}
     residue_records: dict[str, LigandRecord] = {}
     for line in pdb_text.splitlines():
@@ -149,11 +149,11 @@ def _choose_ligand_record_from_pdb_text(pdb_text: str) -> LigandRecord | None:
 
 
 def _compute_center_from_receptor_pdb(receptor_pdb: Path) -> tuple[float, float, float]:
-    """从受体 PDB 中共晶配体坐标推断 docking 中心。"""
+    """Infer docking center from co-crystal ligand coordinates in a receptor PDB."""
     pdb_text = receptor_pdb.read_text(encoding="utf-8", errors="ignore")
     ligand_record = _choose_ligand_record_from_pdb_text(pdb_text)
     if ligand_record is None:
-        raise RuntimeError(f"无法从受体 PDB 自动识别可用共晶配体中心: {receptor_pdb}")
+        raise RuntimeError(f"Unable to identify a usable co-crystal ligand center from receptor PDB: {receptor_pdb}")
 
     coordinates: list[tuple[float, float, float]] = []
     for line in pdb_text.splitlines():
@@ -164,12 +164,12 @@ def _compute_center_from_receptor_pdb(receptor_pdb: Path) -> tuple[float, float,
         if _pdb_residue_key(residue_name, chain, residue_number) == _ligand_record_key(ligand_record):
             coordinates.append(coords)
     if not coordinates:
-        raise RuntimeError(f"无法从受体 PDB 读取共晶配体坐标: {receptor_pdb}")
+        raise RuntimeError(f"Unable to read co-crystal ligand coordinates from receptor PDB: {receptor_pdb}")
     return _average_coordinates(coordinates)
 
 
 def _parse_pdb_ligand_atom(line: str) -> tuple[str, str, str, tuple[float, float, float]] | None:
-    """解析一个可用于口袋中心推断的 HETATM 记录。"""
+    """Parse one HETATM record usable for pocket-center inference."""
     if not line.startswith("HETATM"):
         return None
 
@@ -185,7 +185,7 @@ def _parse_pdb_ligand_atom(line: str) -> tuple[str, str, str, tuple[float, float
 
 
 def _is_candidate_residue_name(residue_name: str) -> bool:
-    """判断 PDB 残基名是否可能代表共晶配体。"""
+    """Return whether a PDB residue name may represent a co-crystal ligand."""
     return (
         bool(residue_name)
         and residue_name not in IGNORED_PDB_LIGANDS
@@ -195,17 +195,17 @@ def _is_candidate_residue_name(residue_name: str) -> bool:
 
 
 def _pdb_residue_key(residue_name: str, chain: str, residue_number: str) -> str:
-    """生成 PDB 残基的稳定匹配键。"""
+    """Build a stable matching key for a PDB residue."""
     return f"{residue_name}:{chain}:{residue_number}"
 
 
 def _ligand_record_key(record: LigandRecord) -> str:
-    """生成 LigandRecord 的稳定匹配键。"""
+    """Build a stable matching key for a LigandRecord."""
     return _pdb_residue_key(record.name, record.chain, record.residue_number)
 
 
 def _average_coordinates(coordinates: list[tuple[float, float, float]]) -> tuple[float, float, float]:
-    """计算 3D 坐标中心。"""
+    """Compute the center of 3D coordinates."""
     count = len(coordinates)
     return (
         sum(x for x, _, _ in coordinates) / count,
@@ -218,51 +218,51 @@ def _resolve_docking_center(
     receptor_pdb: Path,
     reference_ligand: Path | None,
 ) -> tuple[float, float, float]:
-    """优先用参考配体中心，缺失时回退到受体中的共晶配体中心。"""
+    """Use the reference-ligand center, otherwise infer it from receptor co-crystal ligand coordinates."""
     if reference_ligand is not None:
         return _compute_center_from_reference_ligand(reference_ligand)
     return _compute_center_from_receptor_pdb(receptor_pdb)
 
 
 def _prepare_candidate_ligand(candidate: ScreeningCandidate, ligand_dir: Path) -> Path:
-    """把 SMILES 转成带 3D 坐标的 SDF，供 gnina 对接。"""
+    """Convert SMILES into an SDF with 3D coordinates for gnina docking."""
     Chem, AllChem = _load_rdkit()
     mol = Chem.MolFromSmiles(candidate.smiles)
     if mol is None:
-        raise RuntimeError(f"RDKit 无法解析候选 SMILES: {candidate.smiles}")
+        raise RuntimeError(f"RDKit could not parse candidate SMILES: {candidate.smiles}")
 
     mol = Chem.AddHs(mol)
     params = AllChem.ETKDGv3()
     params.randomSeed = 42
     status = AllChem.EmbedMolecule(mol, params)
     if status != 0:
-        raise RuntimeError(f"RDKit 无法为候选生成 3D 构象: {candidate.name}")
+        raise RuntimeError(f"RDKit could not generate a 3D conformer for candidate: {candidate.name}")
 
     try:
         AllChem.UFFOptimizeMolecule(mol)
     except Exception:
-        # 构象已经存在时，优化失败不阻止后续 docking。
+        # If a conformer already exists, optimization failure does not block docking.
         pass
 
     ligand_dir.mkdir(parents=True, exist_ok=True)
     ligand_path = ligand_dir / f"{_safe_filename(candidate.name)}.sdf"
     writer = Chem.SDWriter(str(ligand_path))
     if writer is None:
-        raise RuntimeError(f"无法创建候选 SDF 文件: {ligand_path}")
+        raise RuntimeError(f"Unable to create candidate SDF file: {ligand_path}")
     writer.write(mol)
     writer.close()
     return ligand_path
 
 
 def _write_command_record(commands_path: Path, payload: dict[str, object]) -> None:
-    """把单次 docking 命令记录到 jsonl，便于追溯。"""
+    """Write one docking command record to jsonl."""
     commands_path.parent.mkdir(parents=True, exist_ok=True)
     with commands_path.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(payload, ensure_ascii=False) + "\n")
 
 
 def _extract_sdf_property(sdf_path: Path, property_name: str) -> str | None:
-    """从 SDF 文本中提取首个属性值。"""
+    """Extract the first property value from SDF text."""
     if not sdf_path.exists():
         return None
     lines = sdf_path.read_text(encoding="utf-8", errors="ignore").splitlines()
@@ -276,7 +276,7 @@ def _extract_sdf_property(sdf_path: Path, property_name: str) -> str | None:
 
 
 def _extract_score_from_stdout(stdout: str) -> float | None:
-    """优先从 gnina 输出中提取可比较的 docking 分数。"""
+    """Extract a comparable docking score from gnina output."""
     for label in ("minimizedAffinity", "CNNaffinity", "CNNscore"):
         for line in stdout.splitlines():
             if line.startswith(label):
@@ -290,7 +290,7 @@ def _extract_score_from_stdout(stdout: str) -> float | None:
 
 
 def _read_docking_score(pose_sdf: Path, stdout: str) -> float | None:
-    """优先从 pose SDF 读取分数，缺失时再回退到 stdout。"""
+    """Read score from pose SDF first, then stdout if needed."""
     raw_score = _extract_sdf_property(pose_sdf, "minimizedAffinity")
     if raw_score is not None:
         try:
@@ -301,7 +301,7 @@ def _read_docking_score(pose_sdf: Path, stdout: str) -> float | None:
 
 
 def _failed_row(candidate: ScreeningCandidate, error: str) -> dict[str, object]:
-    """构造稳定的失败结果行。"""
+    """Build a stable failed docking row."""
     return {
         "name": candidate.name,
         "smiles": candidate.smiles,
@@ -312,7 +312,7 @@ def _failed_row(candidate: ScreeningCandidate, error: str) -> dict[str, object]:
 
 
 def _build_gnina_runtime_env() -> dict[str, str]:
-    """为 gnina 准备运行时环境，补上当前 conda 环境的动态库路径。"""
+    """Prepare the runtime environment for gnina."""
     runtime_env = dict(os.environ)
     conda_prefix = runtime_env.get("CONDA_PREFIX", "").strip()
     if not conda_prefix:
@@ -342,7 +342,7 @@ def run_docking_batch(
     n_threads: int,
     box_size: tuple[float, float, float],
 ) -> list[dict[str, object]]:
-    """逐个执行 gnina docking，并保存中间文件与日志。"""
+    """Run gnina docking for each candidate and save outputs."""
     docking_dir = output_dir / "docking"
     ligand_dir = docking_dir / "ligands"
     poses_dir = docking_dir / "poses"
@@ -405,12 +405,12 @@ def run_docking_batch(
         (logs_dir / f"{safe_name}.stderr.log").write_text(result.stderr, encoding="utf-8")
 
         if result.returncode != 0:
-            results.append(_failed_row(candidate, f"gnina 失败(returncode={result.returncode}): {result.stderr.strip()}"))
+            results.append(_failed_row(candidate, f"gnina failed(returncode={result.returncode}): {result.stderr.strip()}"))
             continue
 
         score = _read_docking_score(pose_path, result.stdout)
         if score is None:
-            results.append(_failed_row(candidate, "gnina 已完成，但未能解析 docking score。"))
+            results.append(_failed_row(candidate, "gnina finished but no docking score could be parsed."))
             continue
 
         results.append(

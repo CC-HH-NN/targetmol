@@ -1,4 +1,4 @@
-"""围绕候选扩增结果做 refinement、排序与 shortlist 收口。"""
+"""Refine, rank, and shortlist expanded candidates."""
 
 from __future__ import annotations
 
@@ -26,13 +26,13 @@ def refine_candidate_pool(
     llm_runner=None,
     expansion_payload: dict[str, object] | None = None,
 ) -> dict[str, object]:
-    """读取候选扩增结果，做一轮轻量 refinement 并写出 shortlist。"""
+    """Read expanded candidates, run lightweight refinement, and write a shortlist."""
     payload = expansion_payload
     if payload is None:
         payload = json.loads(input_json_path.read_text(encoding="utf-8"))
     raw_candidates = payload.get("candidates")
     if not isinstance(raw_candidates, list):
-        raise ValueError(f"{input_json_path} 缺少有效的 candidates 列表。")
+        raise ValueError(f"{input_json_path} is missing a valid candidates list.")
 
     evaluated = _evaluate_candidates(
         raw_candidates=raw_candidates,
@@ -68,7 +68,7 @@ def refine_candidate_pool(
 
 
 def compute_anchor_similarity(smiles: str, anchor_smiles: str | None) -> tuple[float | None, bool]:
-    """计算候选与锚点的相似度，并标记是否与锚点完全一致。"""
+    """Compute candidate-anchor similarity and exact-anchor status."""
     if not anchor_smiles:
         return None, False
     if smiles.strip() == anchor_smiles.strip():
@@ -97,7 +97,7 @@ def _evaluate_candidates(
     raw_candidates: list[object],
     anchor_smiles: str | None,
 ) -> list[dict[str, object]]:
-    """把扩增候选补齐性质与相似度信息。"""
+    """Add properties and similarity fields to expanded candidates."""
     evaluated: list[dict[str, object]] = []
     for index, item in enumerate(raw_candidates, start=1):
         if not isinstance(item, dict):
@@ -129,7 +129,7 @@ def _evaluate_candidates(
 
 
 def _calculate_refinement_score(row: dict[str, object]) -> float:
-    """把规则过滤、可合成性和锚点相似度汇成稳定分数。"""
+    """Combine filters, synthesizability, and anchor similarity into a stable score."""
     score = 0.0
     if row.get("is_valid", False):
         score += 5.0
@@ -148,7 +148,7 @@ def _calculate_refinement_score(row: dict[str, object]) -> float:
 
 
 def _refinement_sort_key(row: dict[str, object]) -> tuple[int, int, int, float, int, float, str]:
-    """生成候选 refinement 的稳定排序键。"""
+    """Build a stable sorting key for candidate refinement."""
     return (
         0 if row.get("is_valid", False) else 1,
         0 if row.get("lipinski_pass", False) else 1,
@@ -164,7 +164,7 @@ def _apply_llm_selection(
     ranked_candidates: list[dict[str, object]],
     selection: dict[str, object],
 ) -> list[dict[str, object]]:
-    """在启发式 shortlist 上应用 LLM 的显式选择。"""
+    """Apply explicit LLM selections on top of the heuristic shortlist."""
     selected_names = selection.get("selected_names")
     rationales = selection.get("rationales")
     if not isinstance(selected_names, list):
@@ -207,7 +207,7 @@ def _write_refinement_outputs(
     output_json_path: Path,
     output_smiles_path: Path,
 ) -> dict[str, object]:
-    """把 refinement 结果同时落成 JSON 和标准 smiles 文件。"""
+    """Write refinement results as JSON and standard SMILES files."""
     output_json_path.parent.mkdir(parents=True, exist_ok=True)
     output_smiles_path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
@@ -238,7 +238,7 @@ def _call_refinement_llm(
     ranked_candidates: list[dict[str, object]],
     models: ModelsConfig,
 ) -> dict[str, object]:
-    """调用 OpenAI 兼容聊天接口，从启发式候选里再选一层 shortlist。"""
+    """Call an OpenAI-compatible chat endpoint to refine the shortlist."""
     url = _build_openai_chat_url(models.chat_base_url)
     body = {
         "model": models.chat_model,
@@ -284,11 +284,11 @@ def _call_refinement_llm(
         with request.urlopen(req) as response:
             payload = json.loads(response.read().decode("utf-8"))
     except error.URLError as exc:
-        raise RuntimeError(f"candidate refinement LLM 调用失败: {exc}") from exc
+        raise RuntimeError(f"candidate refinement LLM call failed: {exc}") from exc
 
     choices = payload.get("choices") or []
     if not choices:
-        raise RuntimeError("candidate refinement LLM 返回缺少 choices。")
+        raise RuntimeError("Candidate refinement LLM response is missing choices.")
     message = choices[0].get("message") or {}
     content = message.get("content")
     if isinstance(content, list):
@@ -298,20 +298,20 @@ def _call_refinement_llm(
                 text_parts.append(str(block.get("text", "")))
         content = "".join(text_parts).strip()
     if not isinstance(content, str) or not content.strip():
-        raise RuntimeError("candidate refinement LLM 返回缺少 content。")
+        raise RuntimeError("Candidate refinement LLM response is missing content.")
     parsed = json.loads(content)
     if not isinstance(parsed, dict):
-        raise RuntimeError("candidate refinement LLM 未返回 JSON object。")
+        raise RuntimeError("Candidate refinement LLM did not return a JSON object.")
     return parsed
 
 
 def _llm_available(models: ModelsConfig) -> bool:
-    """判断当前是否可以调用聊天模型。"""
+    """Return whether the chat model can be called."""
     return not _is_placeholder(models.chat_api_key) and not _is_placeholder(models.chat_base_url)
 
 
 def _build_openai_chat_url(base_url: str) -> str:
-    """从 OpenAI 兼容 base url 拼出 chat completions 地址。"""
+    """Build a chat completions URL from an OpenAI-compatible base URL."""
     normalized = base_url.rstrip("/")
     if normalized.endswith("/chat/completions"):
         return normalized
@@ -321,13 +321,13 @@ def _build_openai_chat_url(base_url: str) -> str:
 
 
 def _is_placeholder(value: str) -> bool:
-    """判断配置值是否仍是占位内容。"""
+    """Return whether a configuration value is still a placeholder."""
     stripped = value.strip()
     return not stripped or stripped.startswith(PLACEHOLDER_PREFIXES)
 
 
 def _normalize_text(value: object) -> str | None:
-    """把可选文本值规范化为稳定字符串。"""
+    """Normalize an optional text value into a stable string."""
     if value is None:
         return None
     text = str(value).strip()

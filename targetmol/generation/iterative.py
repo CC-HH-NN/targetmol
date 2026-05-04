@@ -1,4 +1,4 @@
-"""把 ligand-based clean-room 候选生成组织成多轮迭代闭环。"""
+"""Organize ligand-based candidate generation into iterative refinement rounds."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ def run_iterative_ligand_refinement(
     iterations: int,
     shortlist_size: int = 12,
 ) -> dict[str, object]:
-    """围绕扩增候选做多轮 shortlist 与分子修正。"""
+    """Run iterative shortlisting and molecular refinement around expanded candidates."""
     max_rounds = max(1, int(iterations))
     route_iterations_dir = run_dir / "route" / "iterations"
     normalized_iterations_dir = run_dir / "normalized" / "iterations"
@@ -130,7 +130,7 @@ def run_iterative_ligand_refinement(
 
 
 def _build_next_round_payload(molecular_payload: dict[str, object]) -> dict[str, object]:
-    """把单轮分子修正结果转成下一轮候选池。"""
+    """Convert one molecular refinement round into the next candidate pool."""
     records = molecular_payload.get("records")
     if not isinstance(records, list):
         return {"candidates": []}
@@ -160,7 +160,7 @@ def _build_next_round_payload(molecular_payload: dict[str, object]) -> dict[str,
 
 
 def _candidate_signature(payload: dict[str, object]) -> tuple[tuple[str, str], ...]:
-    """为候选池生成稳定签名，用于判断迭代是否还有变化。"""
+    """Build a stable candidate-pool signature to detect iteration changes."""
     raw_candidates = payload.get("candidates")
     if not isinstance(raw_candidates, list):
         return tuple()
@@ -176,7 +176,7 @@ def _candidate_signature(payload: dict[str, object]) -> tuple[tuple[str, str], .
 
 
 def _write_candidate_smiles_file(path: Path, candidates: list[object]) -> None:
-    """把候选列表统一写成标准 smiles 文件。"""
+    """Write candidates into a standard SMILES file."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as handle:
         for item in candidates:
@@ -189,7 +189,7 @@ def _write_candidate_smiles_file(path: Path, candidates: list[object]) -> None:
 
 
 def _write_top_level_artifacts(run_dir: Path, round_records: list[dict[str, object]]) -> None:
-    """把最后一轮的关键结果同步到顶层固定文件名。"""
+    """Copy final-round outputs to stable top-level filenames."""
     if not round_records:
         return
     latest = round_records[-1]
@@ -207,7 +207,7 @@ def _write_top_level_artifacts(run_dir: Path, round_records: list[dict[str, obje
 
 
 def _merge_counts(base: dict[str, int], addition: dict[str, int]) -> None:
-    """把一轮统计合并到总计数字典。"""
+    """Merge one round of counts into the total count map."""
     for key, value in addition.items():
         if value <= 0:
             continue
@@ -215,7 +215,7 @@ def _merge_counts(base: dict[str, int], addition: dict[str, int]) -> None:
 
 
 def _count_dominant_issues(molecular_payload: dict[str, object]) -> dict[str, int]:
-    """统计一轮里各类主弱点出现次数。"""
+    """Count dominant issue types within one round."""
     counts: dict[str, int] = {}
     for record in _iter_records(molecular_payload):
         issue = str(record.get("dominant_issue", "")).strip()
@@ -225,7 +225,7 @@ def _count_dominant_issues(molecular_payload: dict[str, object]) -> dict[str, in
 
 
 def _count_fallbacks(molecular_payload: dict[str, object]) -> dict[str, int]:
-    """统计一轮里各种回退原因。"""
+    """Count fallback reasons within one round."""
     counts: dict[str, int] = {}
     for record in _iter_records(molecular_payload):
         raw_reason = record.get("fallback_reason")
@@ -238,7 +238,7 @@ def _count_fallbacks(molecular_payload: dict[str, object]) -> dict[str, int]:
 
 
 def _count_improvements(molecular_payload: dict[str, object]) -> dict[str, int]:
-    """统计一轮里 before/after 的关键改善次数。"""
+    """Count key before/after improvements within one round."""
     counts = {
         "validity_fixed": 0,
         "lipinski_fixed": 0,
@@ -264,7 +264,7 @@ def _count_improvements(molecular_payload: dict[str, object]) -> dict[str, int]:
 
 
 def _iter_records(molecular_payload: dict[str, object]) -> list[dict[str, object]]:
-    """稳定提取分子修正记录列表。"""
+    """Extract molecular refinement records in a stable form."""
     records = molecular_payload.get("records")
     if not isinstance(records, list):
         return []

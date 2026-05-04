@@ -1,4 +1,4 @@
-"""生成 TargetMol 自己的最终智能体报告。"""
+"""Generate the final TargetMol agent report."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ from pathlib import Path
 
 
 DISCLAIMER = (
-    "本报告基于计算生成、对接和规则筛选结果，仅用于 computational hit discovery 参考，"
-    "不代表实验验证结论。"
+    "This report summarizes computational generation, docking, and rule-based screening results for computational hit discovery only. "
+    "It does not represent experimental validation."
 )
 
 
@@ -20,7 +20,7 @@ def write_agent_report(
     iterative_summary_path: Path | None = None,
     screening_report_path: Path | None = None,
 ) -> Path:
-    """把 clean-room 迭代和筛选结果写成一份可读报告。"""
+    """Write native refinement and screening results as a readable report."""
     final_dir.mkdir(parents=True, exist_ok=True)
     lines = [
         "TargetMol Agent Report",
@@ -43,7 +43,7 @@ def write_agent_report(
 
 
 def _build_iterative_section(payload: dict[str, object]) -> list[str]:
-    """把迭代闭环结果转成可读文本。"""
+    """Convert iterative refinement results into readable text."""
     lines = ["Iterative Ligand Refinement:"]
     stop_reason = payload.get("stop_reason")
     if isinstance(stop_reason, str):
@@ -64,7 +64,7 @@ def _build_iterative_section(payload: dict[str, object]) -> list[str]:
 
 
 def _build_screening_section(payload: dict[str, object]) -> list[str]:
-    """把筛选结果转成可读文本。"""
+    """Convert screening results into readable text."""
     lines = ["Screening Result:"]
     for label, key in [
         ("Target", "target"),
@@ -91,7 +91,7 @@ def _build_screening_section(payload: dict[str, object]) -> list[str]:
 
 
 def _format_count_map(title: str, value: object) -> list[str]:
-    """把计数字典转成稳定文本。"""
+    """Format a count dictionary as stable text."""
     if not isinstance(value, dict) or not value:
         return []
     pairs = []
@@ -105,7 +105,7 @@ def _format_count_map(title: str, value: object) -> list[str]:
 
 
 def _read_json_file(path: Path | None) -> dict[str, object] | None:
-    """读取可选 JSON 文件。"""
+    """Read an optional JSON file."""
     if path is None or not path.exists():
         return None
     return json.loads(path.read_text(encoding="utf-8"))

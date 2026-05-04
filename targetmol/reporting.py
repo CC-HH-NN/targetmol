@@ -1,4 +1,4 @@
-"""生成 TargetMol 最终自然语言报告。"""
+"""Generate the final TargetMol text summary."""
 
 from __future__ import annotations
 
@@ -8,13 +8,13 @@ from targetmol.provenance import read_run_metadata
 
 
 DISCLAIMER = (
-    "本报告基于计算生成、对接和规则筛选结果，仅用于 computational hit discovery 参考，"
-    "不代表实验验证结论。"
+    "This report summarizes computational generation, docking, and rule-based screening results for computational hit discovery only. "
+    "It does not represent experimental validation."
 )
 
 
 def _build_metadata_lines(metadata: dict[str, object]) -> list[str]:
-    """把 run metadata 转成可读的 summary 文本。"""
+    """Convert run metadata into summary text."""
     lines: list[str] = []
     status = metadata.get("summary_status")
     if isinstance(status, str):
@@ -61,7 +61,7 @@ def _build_metadata_lines(metadata: dict[str, object]) -> list[str]:
 
 
 def _extend_unique(lines: list[str], extra_lines: list[str] | None) -> None:
-    """按顺序追加文本，并避免重复行。"""
+    """Append lines in order while avoiding duplicates."""
     if not extra_lines:
         return
     existing = set(lines)
@@ -73,7 +73,7 @@ def _extend_unique(lines: list[str], extra_lines: list[str] | None) -> None:
 
 
 def write_final_summary(*, route: str, final_dir: Path, screening_output: Path | None, extra_lines: list[str] | None = None) -> Path:
-    """输出最终的简短文字总结。"""
+    """Write the final concise text summary."""
     final_dir.mkdir(parents=True, exist_ok=True)
     metadata = read_run_metadata(final_dir.parent / "provenance")
     metadata_screening_output = metadata.get("screening_output")

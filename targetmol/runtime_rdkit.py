@@ -1,4 +1,4 @@
-"""在带 RDKit 的外部环境中运行的辅助脚本。"""
+"""RDKit helper commands used by TargetMol runtime subprocesses."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 def _cleanup_and_fail(output_file: Path, message: str) -> int:
-    """清理不完整输出并把失败原因写到标准错误。"""
+    """Remove incomplete output and write the failure reason to stderr."""
     if output_file.exists():
         output_file.unlink()
     print(message, file=sys.stderr)
@@ -16,7 +16,7 @@ def _cleanup_and_fail(output_file: Path, message: str) -> int:
 
 
 def sdf_to_smiles(input_sdf: Path, output_smi: Path, allow_invalid_records: bool = False) -> int:
-    """把 SDF 转成 smiles-tab-name 文件。"""
+    """Convert an SDF file into a smiles-tab-name file."""
     from rdkit import Chem
 
     supplier = Chem.SDMolSupplier(str(input_sdf), removeHs=False)
@@ -26,9 +26,9 @@ def sdf_to_smiles(input_sdf: Path, output_smi: Path, allow_invalid_records: bool
         for index, mol in enumerate(supplier, start=1):
             if mol is None:
                 if allow_invalid_records:
-                    print(f"SDF 第 {index} 条记录解析失败，已跳过。", file=sys.stderr)
+                    print(f"SDF record {index} could not be parsed and was skipped.", file=sys.stderr)
                     continue
-                return _cleanup_and_fail(output_smi, f"SDF 第 {index} 条记录解析失败。")
+                return _cleanup_and_fail(output_smi, f"SDF record {index} could not be parsed.")
             smiles = Chem.MolToSmiles(mol)
             name = mol.GetProp("_Name").strip() if mol.HasProp("_Name") else ""
             if not name:
@@ -36,12 +36,12 @@ def sdf_to_smiles(input_sdf: Path, output_smi: Path, allow_invalid_records: bool
             handle.write(f"{smiles}\t{name}\n")
             written += 1
     if written == 0:
-        return _cleanup_and_fail(output_smi, "SDF 中没有可用分子。")
+        return _cleanup_and_fail(output_smi, "No usable molecules were found in the SDF file.")
     return 0
 
 
 def normalize_smiles_file(input_file: Path, output_smi: Path, allow_invalid_records: bool = False) -> int:
-    """把文本候选文件统一整理成 smiles-tab-name 文件。"""
+    """Normalize a text candidate file into smiles-tab-name records."""
     from rdkit import Chem
 
     try:
@@ -75,10 +75,10 @@ def normalize_smiles_file(input_file: Path, output_smi: Path, allow_invalid_reco
                     smiles = second
                     name = first or f"mol_{index:04d}"
                 elif allow_invalid_records:
-                    print(f"第 {index} 行不是有效的 SMILES 记录，已跳过。", file=sys.stderr)
+                    print(f"Line {index} is not a valid SMILES record and was skipped.", file=sys.stderr)
                     continue
                 else:
-                    return _cleanup_and_fail(output_smi, f"第 {index} 行不是有效的 SMILES 记录。")
+                    return _cleanup_and_fail(output_smi, f"Line {index} is not a valid SMILES record.")
 
                 target.write(f"{smiles}\t{name}\n")
                 written += 1
@@ -86,12 +86,12 @@ def normalize_smiles_file(input_file: Path, output_smi: Path, allow_invalid_reco
         if RDLogger is not None:
             RDLogger.EnableLog("rdApp.error")
     if written == 0:
-        return _cleanup_and_fail(output_smi, "文本文件中没有可用分子。")
+        return _cleanup_and_fail(output_smi, "No usable molecules were found in the text file.")
     return 0
 
 
 def main() -> int:
-    """执行 RDKit 辅助命令。"""
+    """Run RDKit helper commands."""
     parser = argparse.ArgumentParser(description="TargetMol RDKit helper")
     subparsers = parser.add_subparsers(dest="command", required=True)
 

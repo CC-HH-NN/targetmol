@@ -1,4 +1,4 @@
-"""解析与标准化 TargetMol 的输入参数。"""
+"""Parse and normalize TargetMol input arguments."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from pathlib import Path
 
 @dataclass
 class InputSpec:
-    """一次运行所需的标准化输入。"""
+    """Normalized inputs for one run."""
 
     pdb_id: str | None
     pdb_file: Path | None
@@ -23,27 +23,27 @@ class InputSpec:
 
     @property
     def has_pdb(self) -> bool:
-        """是否具备结构输入。"""
+        """Return whether structure input is available."""
         return bool(self.pdb_id or self.pdb_file)
 
     @property
     def has_reference_ligand(self) -> bool:
-        """是否具备参考配体。"""
+        """Return whether a reference ligand is available."""
         return self.reference_ligand is not None
 
     @property
     def has_seed_smiles(self) -> bool:
-        """是否具备 seed SMILES 文件。"""
+        """Return whether a seed SMILES file is available."""
         return self.seed_smiles_file is not None
 
     @property
     def has_target_context(self) -> bool:
-        """是否具备 ligand 生成可用的文本上下文。"""
+        """Return whether ligand-generation text context is available."""
         return self.target_name is not None
 
 
 def build_input_spec(args) -> InputSpec:
-    """从 argparse 结果构建统一输入对象。"""
+    """Build a unified input object from argparse results."""
     pdb_file = _resolve_path(getattr(args, "pdb_file", None))
     reference_ligand = _resolve_path(getattr(args, "reference_ligand", None))
     seed_smiles_file = _resolve_path(getattr(args, "seed_smiles_file", None))
@@ -79,16 +79,16 @@ def build_input_spec(args) -> InputSpec:
 
 
 def _resolve_path(path_value: str | None) -> Path | None:
-    """把可选路径参数标准化为绝对路径。"""
+    """Normalize an optional path argument to an absolute path."""
     if not path_value:
         return None
     return Path(path_value).expanduser().resolve()
 
 
 def _resolve_candidate_file_arg(args) -> Path | None:
-    """解析候选文件参数，并阻止冲突输入被静默吞掉。"""
+    """Resolve candidate file arguments and reject conflicting inputs."""
     candidate_file = _resolve_path(getattr(args, "candidate_file", None))
     candidate_smiles_file = _resolve_path(getattr(args, "candidate_smiles_file", None))
     if candidate_file and candidate_smiles_file and candidate_file != candidate_smiles_file:
-        raise ValueError("`--candidate-file` 和 `--candidate-smiles-file` 不能同时指向不同文件。")
+        raise ValueError("`--candidate-file` and `--candidate-smiles-file` cannot point to different files at the same time.")
     return candidate_file or candidate_smiles_file

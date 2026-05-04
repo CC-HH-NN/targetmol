@@ -1,4 +1,4 @@
-"""处理 PDB ID 预下载和参考配体判断，供输入准备阶段复用。"""
+"""Prepare PDB ID inputs and identify reference ligands."""
 
 from __future__ import annotations
 
@@ -43,7 +43,7 @@ REJECTED_LIGANDS = {
 
 @dataclass
 class PreparedPdbInputs:
-    """PDB ID 预处理后的结构化结果。"""
+    """Structured PDB preparation result."""
 
     pdb_id: str
     pdb_file: Path
@@ -54,13 +54,13 @@ class PreparedPdbInputs:
 
     @property
     def has_reference_ligand(self) -> bool:
-        """是否已拿到可用参考配体。"""
+        """Return whether a usable reference ligand was found."""
         return self.reference_ligand is not None
 
 
 @dataclass(frozen=True)
 class LigandRecord:
-    """PDB 中一个异源小分子残基的位置记录。"""
+    """Location record for one hetero small-molecule residue in a PDB file."""
 
     name: str
     chain: str
@@ -69,7 +69,7 @@ class LigandRecord:
 
 
 def prepare_pdb_inputs_for_run(pdb_id: str, run_dir: Path) -> PreparedPdbInputs:
-    """下载 PDB 并尽量补齐靶点名与参考配体。"""
+    """Download a PDB file and infer target and reference-ligand fields when possible."""
     normalized_pdb_id = pdb_id.strip().upper()
     inputs_dir = run_dir / "inputs"
     inputs_dir.mkdir(parents=True, exist_ok=True)
@@ -81,7 +81,7 @@ def prepare_pdb_inputs_for_run(pdb_id: str, run_dir: Path) -> PreparedPdbInputs:
             pdb_file,
         )
     except (HTTPError, URLError) as exc:
-        raise RuntimeError(f"PDB ID {normalized_pdb_id} 下载失败：{exc}") from exc
+        raise RuntimeError(f"PDB ID {normalized_pdb_id} download failed：{exc}") from exc
     target_name = _parse_target_name_from_pdb(pdb_text)
     ligand_record = _choose_ligand_record_from_pdb(pdb_text)
     ligand_name = ligand_record.name if ligand_record else None
@@ -115,14 +115,14 @@ def prepare_pdb_inputs_for_run(pdb_id: str, run_dir: Path) -> PreparedPdbInputs:
 
 
 def _download_text(url: str, output_path: Path) -> str:
-    """下载文本文件并写入运行目录。"""
+    """Download a text file into the run directory."""
     text = _download_bytes(url).decode("utf-8")
     output_path.write_text(text, encoding="utf-8")
     return text
 
 
 def _download_ligand_sdf(ligand_name: str, pdb_id: str, inputs_dir: Path) -> Path | None:
-    """尝试下载 RCSB 配体 SDF，先 ideal 再 model。"""
+    """Try downloading an RCSB ligand SDF, preferring ideal before model."""
     output_path = inputs_dir / f"{pdb_id}_{ligand_name}.sdf"
     for template in LIGAND_DOWNLOAD_URLS:
         try:
@@ -139,13 +139,13 @@ def _download_ligand_sdf(ligand_name: str, pdb_id: str, inputs_dir: Path) -> Pat
 
 
 def _download_bytes(url: str) -> bytes:
-    """下载远程内容。"""
+    """Download remote content."""
     with urlopen(url) as response:
         return response.read()
 
 
 def _parse_target_name_from_pdb(pdb_text: str) -> str | None:
-    """从 COMPND 的 MOLECULE 段尽量提取靶点名。"""
+    """Extract a target name from COMPND MOLECULE records when possible."""
     for line in pdb_text.splitlines():
         if not line.startswith("COMPND"):
             continue
@@ -161,13 +161,13 @@ def _parse_target_name_from_pdb(pdb_text: str) -> str | None:
 
 
 def _choose_ligand_name_from_pdb(pdb_text: str) -> str | None:
-    """从异源残基里选一个最像小分子配体的候选。"""
+    """Select the most ligand-like hetero residue candidate."""
     ligand_record = _choose_ligand_record_from_pdb(pdb_text)
     return ligand_record.name if ligand_record else None
 
 
 def _choose_ligand_record_from_pdb(pdb_text: str) -> LigandRecord | None:
-    """从异源残基里选一个最像小分子配体的位置记录。"""
+    """Select the most ligand-like hetero residue location."""
     residue_atom_counts: dict[str, int] = {}
     residue_records: dict[str, LigandRecord] = {}
     for line in pdb_text.splitlines():
@@ -210,7 +210,7 @@ def _write_cocrystal_ligand_sdf(
     pdb_id: str,
     inputs_dir: Path,
 ) -> Path | None:
-    """从 PDB 共晶坐标提取参考配体并写成 SDF。"""
+    """Extract a reference ligand from PDB co-crystal coordinates and write SDF."""
     ligand_lines, ligand_serials = _extract_ligand_pdb_lines(pdb_text, ligand_record)
     if not ligand_lines or not ligand_serials:
         return None
@@ -240,7 +240,7 @@ def _write_cocrystal_ligand_sdf(
 
 
 def _extract_ligand_pdb_lines(pdb_text: str, ligand_record: LigandRecord) -> tuple[list[str], set[str]]:
-    """取出指定共晶配体残基的 HETATM 行和原子序号。"""
+    """Collect HETATM lines and atom serials for a selected co-crystal ligand."""
     ligand_lines = []
     ligand_serials = set()
     for line in pdb_text.splitlines():
@@ -258,7 +258,7 @@ def _extract_ligand_pdb_lines(pdb_text: str, ligand_record: LigandRecord) -> tup
 
 
 def _extract_ligand_conect_lines(pdb_text: str, ligand_serials: set[str]) -> list[str]:
-    """取出指定配体内部 CONECT 记录。"""
+    """Collect CONECT records inside the selected ligand."""
     conect_lines = []
     for line in pdb_text.splitlines():
         if not line.startswith("CONECT"):
@@ -272,7 +272,7 @@ def _extract_ligand_conect_lines(pdb_text: str, ligand_serials: set[str]) -> lis
 
 
 def _is_plausible_ligand_name(residue_name: str) -> bool:
-    """过滤明显不是小分子参考配体的残基名。"""
+    """Filter residue names that are unlikely to be small-molecule reference ligands."""
     if not residue_name:
         return False
     if residue_name in REJECTED_LIGANDS:

@@ -1,2 +1,2 @@
-"""TargetMol 候选生成模块。"""
+"""TargetMol candidate generation package."""
 

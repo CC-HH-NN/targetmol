@@ -1,4 +1,4 @@
-"""自然语言请求理解与结构化补全。"""
+"""Natural-language request understanding and structured field completion."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ ALLOWED_TASK_TYPES = {"screen_only", "structure_based", "ligand_based", "hybrid"
 
 @dataclass
 class RequestUnderstanding:
-    """请求理解得到的结构化结果。"""
+    """Structured request-understanding result."""
 
     target_name: str | None = None
     disease: str | None = None
@@ -27,7 +27,7 @@ class RequestUnderstanding:
 
     @classmethod
     def from_mapping(cls, payload: dict[str, object]) -> "RequestUnderstanding":
-        """从 LLM 或其他结构化输入构造理解结果。"""
+        """Build an understanding result from LLM or structured input."""
         pdb_id = _normalize_text(payload.get("pdb_id"))
         task_type = _normalize_text(payload.get("task_type"))
         if pdb_id:
@@ -49,7 +49,7 @@ def understand_request(
     models: ModelsConfig,
     llm_runner=None,
 ) -> RequestUnderstanding:
-    """优先用 LLM 理解请求，失败时稳定回退到启发式规则。"""
+    """Use an LLM for request understanding with heuristic backup."""
     fallback = RequestUnderstanding(pdb_id=extract_pdb_id(request_text))
     if _is_placeholder(models.chat_api_key) or _is_placeholder(models.chat_base_url):
         return fallback
@@ -72,7 +72,7 @@ def enrich_input_spec_from_request(
     *,
     llm_runner=None,
 ) -> InputSpec:
-    """用请求理解结果补齐缺失字段，但不覆盖显式输入。"""
+    """Fill missing fields from request understanding without overwriting explicit inputs."""
     if not spec.request_text:
         return spec
     understanding = understand_request(
@@ -89,7 +89,7 @@ def enrich_input_spec_from_request(
 
 
 def _normalize_text(value: object) -> str | None:
-    """把可选文本值规范化为稳定字符串。"""
+    """Normalize an optional text value into a stable string."""
     if value is None:
         return None
     text = str(value).strip()
@@ -97,13 +97,13 @@ def _normalize_text(value: object) -> str | None:
 
 
 def _is_placeholder(value: str) -> bool:
-    """判断配置值是否仍是占位内容。"""
+    """Return whether a configuration value is still a placeholder."""
     stripped = value.strip()
     return not stripped or stripped.startswith(PLACEHOLDER_PREFIXES)
 
 
 def _build_openai_chat_url(base_url: str) -> str:
-    """从 OpenAI 兼容 base url 拼出 chat completions 地址。"""
+    """Build a chat completions URL from an OpenAI-compatible base URL."""
     normalized = base_url.rstrip("/")
     if normalized.endswith("/chat/completions"):
         return normalized
@@ -113,7 +113,7 @@ def _build_openai_chat_url(base_url: str) -> str:
 
 
 def _call_request_understanding_llm(*, request_text: str, models: ModelsConfig) -> dict[str, object]:
-    """调用 OpenAI 兼容聊天接口，返回结构化请求理解结果。"""
+    """Call an OpenAI-compatible chat endpoint for structured request understanding."""
     url = _build_openai_chat_url(models.chat_base_url)
     prompt = (
         "You are a drug-discovery task parser. "
@@ -144,15 +144,15 @@ def _call_request_understanding_llm(*, request_text: str, models: ModelsConfig) 
         with request.urlopen(req) as response:
             response_payload = json.loads(response.read().decode("utf-8"))
     except error.URLError as exc:
-        raise RuntimeError(f"request understanding LLM 调用失败: {exc}") from exc
+        raise RuntimeError(f"request understanding LLM call failed: {exc}") from exc
 
     choices = response_payload.get("choices") or []
     if not choices:
-        raise RuntimeError("request understanding LLM 返回缺少 choices。")
+        raise RuntimeError("Request understanding LLM response is missing choices.")
     message = choices[0].get("message") or {}
     content = message.get("content")
     if not content:
-        raise RuntimeError("request understanding LLM 返回缺少 content。")
+        raise RuntimeError("Request understanding LLM response is missing content.")
     if isinstance(content, list):
         text_parts = []
         for block in content:
@@ -160,8 +160,8 @@ def _call_request_understanding_llm(*, request_text: str, models: ModelsConfig) 
                 text_parts.append(str(block.get("text", "")))
         content = "".join(text_parts).strip()
     if not isinstance(content, str):
-        raise RuntimeError("request understanding LLM content 不是字符串。")
+        raise RuntimeError("Request understanding LLM content is not a string.")
     parsed = json.loads(content)
     if not isinstance(parsed, dict):
-        raise RuntimeError("request understanding LLM 未返回 JSON object。")
+        raise RuntimeError("Request understanding LLM did not return a JSON object.")
     return parsed

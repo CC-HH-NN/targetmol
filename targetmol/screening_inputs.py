@@ -1,4 +1,4 @@
-"""筛选输入标准化模块，供工作流在执行前统一候选分子文件。"""
+"""Normalize screening candidate files before workflow execution."""
 
 from __future__ import annotations
 
@@ -10,10 +10,10 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 def prepare_screening_input_file(candidate_file: Path, run_dir: Path, conda_env: str) -> Path:
-    """把候选 SMILES 或 SDF 文件统一整理成 normalized 下的 .smi。"""
+    """Normalize candidate SMILES or SDF files into a .smi file."""
     source = candidate_file.expanduser().resolve()
     if not source.exists():
-        raise FileNotFoundError(f"候选分子文件不存在: {source}")
+        raise FileNotFoundError(f"Candidate molecule file does not exist: {source}")
 
     normalized_dir = run_dir / "normalized"
     normalized_dir.mkdir(parents=True, exist_ok=True)
@@ -25,11 +25,11 @@ def prepare_screening_input_file(candidate_file: Path, run_dir: Path, conda_env:
     if suffix == ".sdf":
         return _convert_sdf_to_smiles(source, output_file, conda_env)
 
-    raise ValueError("不支持的候选文件后缀，仅支持 .smi/.smiles/.txt/.sdf。")
+    raise ValueError("Unsupported candidate file suffix; supported suffixes are .smi, .smiles, .txt, and .sdf.")
 
 
 def _normalize_smiles_like_file(source: Path, output_file: Path, conda_env: str) -> Path:
-    """把文本候选文件统一整理成 smiles-tab-name 记录。"""
+    """Normalize a text candidate file into smiles-tab-name records."""
     command = [
         "conda",
         "run",
@@ -49,31 +49,31 @@ def _normalize_smiles_like_file(source: Path, output_file: Path, conda_env: str)
     _write_normalization_log(output_file, command, result)
     if result.returncode != 0:
         raise RuntimeError(
-            "SMILES 文本标准化失败: "
+            "SMILES text normalization failed: "
             f"{source}; command={' '.join(command)}; "
             f"stdout={result.stdout.strip()}; stderr={result.stderr.strip()}"
         )
     if not output_file.exists():
         raise RuntimeError(
-            "SMILES 文本标准化失败：未生成输出文件。"
+            "SMILES text normalization failed：No output file was generated."
             f" input={source}; output={output_file}; command={' '.join(command)}"
         )
     output_text = output_file.read_text(encoding="utf-8")
     if not output_text.strip():
         raise RuntimeError(
-            "SMILES 文本标准化失败：没有生成可用分子。"
+            "SMILES text normalization failed：No usable molecules were generated."
             f" input={source}; output={output_file}; command={' '.join(command)}"
         )
     if not _has_valid_smiles_record(output_text):
         raise RuntimeError(
-            "SMILES 文本标准化失败：输出内容不是有效的 SMILES 记录。"
+            "SMILES text normalization failed：Output content is not a valid SMILES record."
             f" input={source}; output={output_file}; command={' '.join(command)}"
         )
     return output_file
 
 
 def _convert_sdf_to_smiles(source: Path, output_file: Path, conda_env: str) -> Path:
-    """把 SDF 候选文件转换成标准 .smi。"""
+    """Convert an SDF candidate file into a standard .smi file."""
     command = [
         "conda",
         "run",
@@ -92,31 +92,31 @@ def _convert_sdf_to_smiles(source: Path, output_file: Path, conda_env: str) -> P
     _write_normalization_log(output_file, command, result)
     if result.returncode != 0:
         raise RuntimeError(
-            "SDF 转 SMILES 失败: "
+            "SDF to SMILES conversion failed: "
             f"{source}; command={' '.join(command)}; "
             f"stdout={result.stdout.strip()}; stderr={result.stderr.strip()}"
         )
     if not output_file.exists():
         raise RuntimeError(
-            "SDF 转 SMILES 失败：未生成输出文件。"
+            "SDF to SMILES conversion failed：No output file was generated."
             f" input={source}; output={output_file}; command={' '.join(command)}"
         )
     output_text = output_file.read_text(encoding="utf-8")
     if not output_text.strip():
         raise RuntimeError(
-            "SDF 转 SMILES 失败：没有生成可用分子。"
+            "SDF to SMILES conversion failed：No usable molecules were generated."
             f" input={source}; output={output_file}; command={' '.join(command)}"
         )
     if not _has_valid_smiles_record(output_text):
         raise RuntimeError(
-            "SDF 转 SMILES 失败：输出内容不是有效的 SMILES 记录。"
+            "SDF to SMILES conversion failed：Output content is not a valid SMILES record."
             f" input={source}; output={output_file}; command={' '.join(command)}"
         )
     return output_file
 
 
 def _write_normalization_log(output_file: Path, command: list[str], result: subprocess.CompletedProcess) -> None:
-    """保存输入标准化子进程日志，方便追踪跳过记录和 RDKit 警告。"""
+    """Save input-normalization subprocess logs."""
     stdout = result.stdout.strip()
     stderr = result.stderr.strip()
     if not stdout and not stderr:
@@ -140,7 +140,7 @@ def _write_normalization_log(output_file: Path, command: list[str], result: subp
 
 
 def _has_valid_smiles_record(output_text: str) -> bool:
-    """检查输出是否全部为有效的 smiles-tab-name 记录，且至少有一条。"""
+    """Validate that output contains at least one smiles-tab-name record."""
     saw_valid = False
     for raw_line in output_text.splitlines():
         line = raw_line.strip()

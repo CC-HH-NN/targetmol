@@ -1,4 +1,4 @@
-"""TargetMol clean-room screening 包入口。"""
+"""TargetMol screening package entry point."""
 
 from targetmol.screening.types import (
     DockingResult,

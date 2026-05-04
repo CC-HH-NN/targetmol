@@ -1,4 +1,4 @@
-"""把自然语言请求和显式靶点信息落成可追溯的锚点上下文。"""
+"""Ground natural-language requests and explicit targets into an anchor context."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ PLACEHOLDER_PREFIXES = ("YOUR_", "your_")
 
 @dataclass
 class GroundedTargetContext:
-    """靶点锚点落地结果。"""
+    """Target anchor grounding result."""
 
     target_name: str | None = None
     disease: str | None = None
@@ -32,7 +32,7 @@ class GroundedTargetContext:
 
     @classmethod
     def from_mapping(cls, payload: dict[str, object]) -> "GroundedTargetContext":
-        """把结构化返回值规范化成上下文对象。"""
+        """Normalize structured responses into a context object."""
         return cls(
             target_name=_normalize_text(payload.get("target_name")),
             disease=_normalize_text(payload.get("disease")),
@@ -54,7 +54,7 @@ def ground_input_spec_with_context(
     smiles_runner=None,
     embedding_runner=None,
 ) -> InputSpec:
-    """把请求和显式字段落成锚点上下文，并只补齐缺失字段。"""
+    """Ground request and explicit fields while only filling missing values."""
     enriched_spec, _ = ground_input_spec_with_context_data(
         spec,
         models,
@@ -79,7 +79,7 @@ def ground_input_spec_with_context_data(
     smiles_runner=None,
     embedding_runner=None,
 ) -> tuple[InputSpec, GroundedTargetContext | None]:
-    """把请求和显式字段落成锚点上下文，并返回补齐后的输入与上下文。"""
+    """Ground request and explicit fields and return updated inputs with context."""
     if not spec.request_text and not spec.target_name and not spec.disease:
         return spec, None
 
@@ -130,7 +130,7 @@ def ground_target_context(
     smiles_runner=None,
     embedding_runner=None,
 ) -> GroundedTargetContext:
-    """优先用搜索、embedding 排序和 LLM 整理锚点上下文，失败时稳定回退。"""
+    """Use search, embedding ranking, and LLM extraction to build anchor context."""
     context = GroundedTargetContext(
         target_name=target_name,
         disease=disease,
@@ -206,7 +206,7 @@ def _rank_search_hits(
     embedding_runner,
     context: GroundedTargetContext,
 ) -> list[dict[str, str]]:
-    """用 embedding 对搜索证据排序，失败时保留原顺序。"""
+    """Rank search evidence with embeddings, preserving original order on failure."""
     if not hits:
         return []
     if _is_placeholder(models.embedding_api_key) or _is_placeholder(models.embedding_base_url):
@@ -235,7 +235,7 @@ def _resolve_anchor_smiles_from_known_drug(
     *,
     resolver,
 ) -> str | None:
-    """把已知药名列表解析成第一个可用的锚点 SMILES。"""
+    """Resolve known drug names into the first usable anchor SMILES."""
     for drug_name in _split_known_drug_names(known_drug):
         try:
             resolved = resolver(drug_name)
@@ -248,7 +248,7 @@ def _resolve_anchor_smiles_from_known_drug(
 
 
 def _split_known_drug_names(value: str) -> list[str]:
-    """把逗号或分号分隔的药名列表拆成稳定顺序。"""
+    """Split comma- or semicolon-separated drug names in stable order."""
     normalized = value.replace(";", ",").replace("，", ",")
     names: list[str] = []
     seen: set[str] = set()
@@ -267,7 +267,7 @@ def _build_search_queries(
     target_name: str | None,
     disease: str | None,
 ) -> list[str]:
-    """基于目标和疾病构建最小搜索查询集。"""
+    """Build minimal search queries from target and disease context."""
     queries: list[str] = []
     if target_name and disease:
         queries.append(f"{target_name} {disease} known inhibitor")
@@ -289,7 +289,7 @@ def _build_search_queries(
 
 
 def _search_with_serper(*, query: str, api_key: str) -> list[dict[str, str]]:
-    """调用 Serper 搜索接口，提取最小证据片段。"""
+    """Call Serper search and extract compact evidence snippets."""
     req = request.Request(
         "https://google.serper.dev/search",
         data=json.dumps({"q": query}).encode("utf-8"),
@@ -303,7 +303,7 @@ def _search_with_serper(*, query: str, api_key: str) -> list[dict[str, str]]:
         with request.urlopen(req) as response:
             payload = json.loads(response.read().decode("utf-8"))
     except error.URLError as exc:
-        raise RuntimeError(f"Serper 调用失败: {exc}") from exc
+        raise RuntimeError(f"Serper call failed: {exc}") from exc
 
     hits = []
     for item in payload.get("organic", [])[:3]:
@@ -316,7 +316,7 @@ def _search_with_serper(*, query: str, api_key: str) -> list[dict[str, str]]:
 
 
 def _resolve_smiles_from_compound_name(drug_name: str) -> str | None:
-    """优先从 PubChem，再从 ChEMBL 解析药名对应的 canonical smiles。"""
+    """Resolve canonical SMILES from PubChem, then ChEMBL."""
     for resolver in (_resolve_smiles_with_pubchem, _resolve_smiles_with_chembl):
         try:
             resolved = resolver(drug_name)
@@ -329,7 +329,7 @@ def _resolve_smiles_from_compound_name(drug_name: str) -> str | None:
 
 
 def _resolve_smiles_with_pubchem(drug_name: str) -> str | None:
-    """调用 PubChem PUG REST 解析 canonical smiles。"""
+    """Resolve canonical SMILES with PubChem PUG REST."""
     encoded_name = parse.quote(drug_name)
     url = (
         "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/"
@@ -348,7 +348,7 @@ def _resolve_smiles_with_pubchem(drug_name: str) -> str | None:
 
 
 def _resolve_smiles_with_chembl(drug_name: str) -> str | None:
-    """调用 ChEMBL 搜索接口解析 canonical smiles。"""
+    """Resolve canonical SMILES with ChEMBL search."""
     encoded_name = parse.quote(drug_name)
     url = f"https://www.ebi.ac.uk/chembl/api/data/molecule/search?q={encoded_name}&format=json"
     payload = _read_json(url)
@@ -368,15 +368,15 @@ def _resolve_smiles_with_chembl(drug_name: str) -> str | None:
 
 
 def _read_json(url: str) -> dict[str, object]:
-    """读取公开 JSON 接口并返回字典结果。"""
+    """Read a public JSON endpoint and return a dictionary."""
     req = request.Request(url, headers={"User-Agent": "TargetMol/1.0"})
     try:
         with request.urlopen(req) as response:
             payload = json.loads(response.read().decode("utf-8"))
     except error.URLError as exc:
-        raise RuntimeError(f"请求失败: {exc}") from exc
+        raise RuntimeError(f"Request failed: {exc}") from exc
     if not isinstance(payload, dict):
-        raise RuntimeError("接口没有返回 JSON object。")
+        raise RuntimeError("The endpoint did not return a JSON object.")
     return payload
 
 
@@ -388,7 +388,7 @@ def _call_grounding_llm(
     search_hits: list[dict[str, str]],
     models: ModelsConfig,
 ) -> dict[str, object]:
-    """调用 OpenAI 兼容聊天接口做锚点落地。"""
+    """Call an OpenAI-compatible chat endpoint for anchor grounding."""
     url = _build_openai_chat_url(models.chat_base_url)
     system_prompt = (
         "You are a medicinal chemistry task grounding assistant. "
@@ -423,11 +423,11 @@ def _call_grounding_llm(
         with request.urlopen(req) as response:
             response_payload = json.loads(response.read().decode("utf-8"))
     except error.URLError as exc:
-        raise RuntimeError(f"grounding LLM 调用失败: {exc}") from exc
+        raise RuntimeError(f"grounding LLM call failed: {exc}") from exc
 
     choices = response_payload.get("choices") or []
     if not choices:
-        raise RuntimeError("grounding LLM 返回缺少 choices。")
+        raise RuntimeError("Grounding LLM response is missing choices.")
     message = choices[0].get("message") or {}
     content = message.get("content")
     if isinstance(content, list):
@@ -437,15 +437,15 @@ def _call_grounding_llm(
                 text_parts.append(str(block.get("text", "")))
         content = "".join(text_parts).strip()
     if not isinstance(content, str) or not content.strip():
-        raise RuntimeError("grounding LLM 返回缺少 content。")
+        raise RuntimeError("Grounding LLM response is missing content.")
     parsed = json.loads(content)
     if not isinstance(parsed, dict):
-        raise RuntimeError("grounding LLM 未返回 JSON object。")
+        raise RuntimeError("Grounding LLM did not return a JSON object.")
     return parsed
 
 
 def _build_openai_chat_url(base_url: str) -> str:
-    """从 OpenAI 兼容 base url 拼出 chat completions 地址。"""
+    """Build a chat completions URL from an OpenAI-compatible base URL."""
     normalized = base_url.rstrip("/")
     if normalized.endswith("/chat/completions"):
         return normalized
@@ -455,7 +455,7 @@ def _build_openai_chat_url(base_url: str) -> str:
 
 
 def _normalize_text(value: object) -> str | None:
-    """把可选文本值规范化为稳定字符串。"""
+    """Normalize an optional text value into a stable string."""
     if value is None:
         return None
     text = str(value).strip()
@@ -463,6 +463,6 @@ def _normalize_text(value: object) -> str | None:
 
 
 def _is_placeholder(value: str) -> bool:
-    """判断配置值是否仍是占位内容。"""
+    """Return whether a configuration value is still a placeholder."""
     stripped = value.strip()
     return not stripped or stripped.startswith(PLACEHOLDER_PREFIXES)

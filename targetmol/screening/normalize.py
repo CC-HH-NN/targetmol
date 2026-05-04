@@ -1,4 +1,4 @@
-"""clean-room screening 输入加载与规范化。"""
+"""Screening input loading and normalization."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from targetmol.screening.types import ScreeningCandidate
 
 
 def load_normalized_smiles_file(path: Path) -> list[ScreeningCandidate]:
-    """读取 normalized .smi 文件并转成候选对象。"""
+    """Read a normalized .smi file into candidate objects."""
     records: list[ScreeningCandidate] = []
     for index, raw_line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
         line = raw_line.strip()
@@ -21,10 +21,10 @@ def load_normalized_smiles_file(path: Path) -> list[ScreeningCandidate]:
         else:
             parts = line.split(maxsplit=1)
         if len(parts) != 2:
-            raise ValueError(f"{path} 第 {index} 行不是有效的 normalized SMILES 记录。")
+            raise ValueError(f"{path} line {index} is not a valid normalized SMILES record.")
         smiles = parts[0].strip()
         name = parts[1].strip()
         if not smiles or not name:
-            raise ValueError(f"{path} 第 {index} 行不是有效的 normalized SMILES 记录。")
+            raise ValueError(f"{path} line {index} is not a valid normalized SMILES record.")
         records.append(ScreeningCandidate(name=name, smiles=smiles))
     return records

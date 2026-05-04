@@ -1,4 +1,4 @@
-"""为靶点 grounding 提供 embedding 证据排序能力。"""
+"""Provide embedding-based evidence ranking for target grounding."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ def rank_hits_by_embedding(
     models: ModelsConfig,
     embedding_runner=None,
 ) -> list[dict[str, str]]:
-    """调用 embedding 模型并按语义相似度重排搜索证据。"""
+    """Call the embedding model and rank search evidence by semantic similarity."""
     if not hits:
         return []
     query = _build_embedding_query(
@@ -33,7 +33,7 @@ def rank_hits_by_embedding(
 
 
 def call_embedding_model(*, texts: list[str], models: ModelsConfig) -> list[list[float]]:
-    """调用 OpenAI 兼容 embeddings 端点。"""
+    """Call an OpenAI-compatible embeddings endpoint."""
     url = _build_openai_embedding_url(models.embedding_base_url)
     req = request.Request(
         url,
@@ -48,31 +48,31 @@ def call_embedding_model(*, texts: list[str], models: ModelsConfig) -> list[list
         with request.urlopen(req) as response:
             payload = json.loads(response.read().decode("utf-8"))
     except error.URLError as exc:
-        raise RuntimeError(f"embedding 调用失败: {exc}") from exc
+        raise RuntimeError(f"embedding call failed: {exc}") from exc
     return _parse_embedding_payload(payload, expected_count=len(texts))
 
 
 def _parse_embedding_payload(payload: dict[str, object], *, expected_count: int) -> list[list[float]]:
-    """解析 embedding API 返回的向量列表。"""
+    """Parse vectors returned by the embedding API."""
     items = payload.get("data")
     if not isinstance(items, list) or len(items) != expected_count:
-        raise RuntimeError("embedding 返回数量和输入文本数量不一致。")
+        raise RuntimeError("Embedding count does not match input text count.")
     vectors: list[list[float]] = []
     for item in items:
         if not isinstance(item, dict) or not isinstance(item.get("embedding"), list):
-            raise RuntimeError("embedding 返回格式无效。")
+            raise RuntimeError("Embedding response format is invalid.")
         vectors.append([float(value) for value in item["embedding"]])
     return vectors
 
 
 def _build_embedding_query(*, request_text: str | None, target_name: str | None, disease: str | None) -> str:
-    """构建证据排序查询文本。"""
+    """Build the evidence-ranking query text."""
     parts = [request_text, target_name, disease, "known inhibitor approved drug anchor molecule"]
     return " ".join(part.strip() for part in parts if part and part.strip())
 
 
 def _hit_to_text(hit: dict[str, str]) -> str:
-    """把搜索结果压成 embedding 输入文本。"""
+    """Compress a search result into embedding input text."""
     return " ".join(filter(None, [hit.get("title", ""), hit.get("snippet", ""), hit.get("link", "")])).strip()
 
 
@@ -82,7 +82,7 @@ def _rank_hits_by_vectors(
     query_vector: list[float],
     hit_vectors: list[list[float]],
 ) -> list[dict[str, str]]:
-    """按 query 与 hit 向量余弦相似度降序排序。"""
+    """Sort hits by cosine similarity to the query vector."""
     scored = []
     for index, hit in enumerate(hits):
         score = _cosine_similarity(query_vector, hit_vectors[index])
@@ -92,7 +92,7 @@ def _rank_hits_by_vectors(
 
 
 def _cosine_similarity(left: list[float], right: list[float]) -> float:
-    """计算两个向量的余弦相似度。"""
+    """Compute cosine similarity between two vectors."""
     numerator = sum(a * b for a, b in zip(left, right))
     left_norm = math.sqrt(sum(a * a for a in left))
     right_norm = math.sqrt(sum(b * b for b in right))
@@ -102,7 +102,7 @@ def _cosine_similarity(left: list[float], right: list[float]) -> float:
 
 
 def _build_openai_embedding_url(base_url: str) -> str:
-    """从 OpenAI 兼容 base url 拼出 embeddings 地址。"""
+    """Build an embeddings URL from an OpenAI-compatible base URL."""
     normalized = base_url.rstrip("/")
     if normalized.endswith("/embeddings"):
         return normalized

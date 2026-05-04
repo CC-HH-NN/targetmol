@@ -1,4 +1,4 @@
-"""围绕 shortlist 做单轮分子弱点修正，并保留 before/after 对照。"""
+"""Refine shortlisted molecules and keep before/after records."""
 
 from __future__ import annotations
 
@@ -25,11 +25,11 @@ def run_molecular_refinement(
     llm_runner=None,
     max_candidates: int = 5,
 ) -> dict[str, object]:
-    """读取 shortlist，做一轮小步分子修正并写出 before/after 记录。"""
+    """Read a shortlist, run one refinement step, and write before/after records."""
     payload = json.loads(input_json_path.read_text(encoding="utf-8"))
     shortlist = payload.get("shortlist")
     if not isinstance(shortlist, list):
-        raise ValueError(f"{input_json_path} 缺少有效的 shortlist 列表。")
+        raise ValueError(f"{input_json_path} is missing a valid shortlist list.")
 
     records: list[dict[str, object]] = []
     for item in shortlist[:max_candidates]:
@@ -94,7 +94,7 @@ def run_molecular_refinement(
 
 
 def derive_dominant_issue(candidate: dict[str, object]) -> str:
-    """从 shortlist 候选里提炼当前最需要修正的一个弱点。"""
+    """Identify the most important issue to refine in shortlisted candidates."""
     if not candidate.get("is_valid", False):
         return "validity"
     if not candidate.get("lipinski_pass", False):
@@ -114,7 +114,7 @@ def _write_outputs(
     output_json_path: Path,
     output_smiles_path: Path,
 ) -> dict[str, object]:
-    """把 before/after refinement 结果写入运行目录。"""
+    """Write before/after refinement results into the run directory."""
     output_json_path.parent.mkdir(parents=True, exist_ok=True)
     output_smiles_path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
@@ -143,7 +143,7 @@ def _call_molecular_refinement_llm(
     dominant_issue: str,
     models: ModelsConfig,
 ) -> dict[str, object]:
-    """调用 OpenAI 兼容聊天接口，做单轮小步分子修正。"""
+    """Call an OpenAI-compatible chat endpoint for one molecular refinement step."""
     url = _build_openai_chat_url(models.chat_base_url)
     body = {
         "model": models.chat_model,
@@ -190,11 +190,11 @@ def _call_molecular_refinement_llm(
         with request.urlopen(req) as response:
             payload = json.loads(response.read().decode("utf-8"))
     except error.URLError as exc:
-        raise RuntimeError(f"molecular refinement LLM 调用失败: {exc}") from exc
+        raise RuntimeError(f"molecular refinement LLM call failed: {exc}") from exc
 
     choices = payload.get("choices") or []
     if not choices:
-        raise RuntimeError("molecular refinement LLM 返回缺少 choices。")
+        raise RuntimeError("Molecular refinement LLM response is missing choices.")
     message = choices[0].get("message") or {}
     content = message.get("content")
     if isinstance(content, list):
@@ -204,20 +204,20 @@ def _call_molecular_refinement_llm(
                 text_parts.append(str(block.get("text", "")))
         content = "".join(text_parts).strip()
     if not isinstance(content, str) or not content.strip():
-        raise RuntimeError("molecular refinement LLM 返回缺少 content。")
+        raise RuntimeError("Molecular refinement LLM response is missing content.")
     parsed = json.loads(content)
     if not isinstance(parsed, dict):
-        raise RuntimeError("molecular refinement LLM 未返回 JSON object。")
+        raise RuntimeError("Molecular refinement LLM did not return a JSON object.")
     return parsed
 
 
 def _llm_available(models: ModelsConfig) -> bool:
-    """判断当前是否可以调用聊天模型。"""
+    """Return whether the chat model can be called."""
     return not _is_placeholder(models.chat_api_key) and not _is_placeholder(models.chat_base_url)
 
 
 def _build_openai_chat_url(base_url: str) -> str:
-    """从 OpenAI 兼容 base url 拼出 chat completions 地址。"""
+    """Build a chat completions URL from an OpenAI-compatible base URL."""
     normalized = base_url.rstrip("/")
     if normalized.endswith("/chat/completions"):
         return normalized
@@ -227,13 +227,13 @@ def _build_openai_chat_url(base_url: str) -> str:
 
 
 def _is_placeholder(value: str) -> bool:
-    """判断配置值是否仍是占位内容。"""
+    """Return whether a configuration value is still a placeholder."""
     stripped = value.strip()
     return not stripped or stripped.startswith(PLACEHOLDER_PREFIXES)
 
 
 def _normalize_text(value: object) -> str | None:
-    """把可选文本值规范化为稳定字符串。"""
+    """Normalize an optional text value into a stable string."""
     if value is None:
         return None
     text = str(value).strip()

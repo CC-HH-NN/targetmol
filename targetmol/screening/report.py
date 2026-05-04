@@ -1,4 +1,4 @@
-"""clean-room screening 报告输出。"""
+"""Internal screening report output."""
 
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ def write_final_reports(
     *,
     metadata: dict[str, object] | None = None,
 ) -> dict[str, str]:
-    """写出与现有流程兼容的 final_report 文件。"""
+    """Write final_report files for the TargetMol workflow."""
     final_dir = output_dir / "final"
     final_dir.mkdir(parents=True, exist_ok=True)
 
